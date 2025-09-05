@@ -1,9 +1,30 @@
+/**
+ * Type NoteType
+ * 
+ * Pour une note quelconque de la pièce
+ */
+type SimpleNote = 'a'|'b'|'c'|'d'|'e'|'f'|'g';
+type RealNote = `${SimpleNote}${''|'es'|'is'|'eses'|'isis'}`;
+
 export interface NoteType {
-  rnote: 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'r';
-  relDegree: number;
-  absDegree: number;
-  chromaticNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  rnote: RealNote;  // p.e. 'eisis'
+  note: SimpleNote; // seulement la lettre de la note, p.e. 'e'
   alteration: 0 | 1 | -1 | 2 | -2;
+  octave: -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  duree: number | 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 3 /*1.*/ | 6 /*2.*/ | 12 /*4.*/ ;
+  relDegree: number;
+  absDegree?: number;
+  chromaticNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+}
+
+export const DUREE = {
+  ronde: 1, ronde_pointee: 1+2,
+  blanche: 2, blanche_pointee: 2+4,
+  noire: 4, noire_pointee: 4+8, noire_ternaire: 4.3,
+  croche: 8, croche_pointee: 8+16, croche_ternaire: 8.3,
+  db_croche: 16, db_croche_pointee: 16 + 32, db_croche_ternaire: 16.3,
+  tr_croche: 32, tr_croche_pointee: 32 + 64, tr_croche_ternaire: 32.3,
+  qu_croche: 64, qu_croche_pointee: 64+128, qu_croche_ternaire: 64.3
 }
 export class Note {
   static readonly DIST4INTERV = {
