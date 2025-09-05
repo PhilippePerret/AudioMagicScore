@@ -11,7 +11,8 @@ export class Chord {
    * mais il arrive qu'on puisse en obtenir plusieurs. Il faudra ensuite 
    * choisir le bon en fonction du poids des notes.
    */
-  private static orderNotes(notes: Note[]): {chord: Note[], foreignNotes: Note[]}[] {
-    return [{chord: notes, foreignNotes: []}]; // pour le moment
+  public static orderNotes(notes: Note[]): {chord: Chord, realNotes: Note[], foreignNotes: Note[]}[] {
+    const chord = new Chord();
+    return [{chord: undefined, realNotes: notes, foreignNotes: []}]; // pour le moment
   } 
 }

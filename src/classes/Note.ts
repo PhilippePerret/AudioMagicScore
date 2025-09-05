@@ -28,6 +28,11 @@ export const DUREE = {
 }
 export class Note {
   static readonly DIST4INTERV = {
+    // La clé représente l'intervalle simple (seconde, tierce
+    // quarte, etc.) et la valeur le nombre de demi-tons qu'il
+    // faut pour atteindre l'intervale juste/majeur ou naturel
+    // Par exemple, 2:2 signifie "pour la seconde, il faut monter de
+    // 2 demi-tons pour l'atteindre"
     2: 2, // <= seconde juste = 2 1/2 tons
     3: 4, // <= tierce majeur = 4 demi-tons
     4: 5, // <= quarte juste = 5 demi-tons
