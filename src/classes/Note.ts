@@ -8,7 +8,7 @@ import { Slice } from "./Slice";
  */
 type SimpleNote = 'a'|'b'|'c'|'d'|'e'|'f'|'g';
 type RealNote = `${SimpleNote}${''|'es'|'is'|'eses'|'isis'}`;
-type DureeType = number | 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 3 /*1.*/ | 6 /*2.*/ | 12 /*4.*/ ;
+export type DureeType = number;
 type ChromaticNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export interface NoteType {
@@ -22,25 +22,29 @@ export interface NoteType {
   chromaticNumber: ChromaticNumber; 
 }
 
+// Pour la tonalité, version simple [<note>, <altération>] ou TuneType
+export type SimpleTune = `${SimpleNote}${'b'|'d'|''}`;
+export type Tune = [SimpleNote, 'b' | 'd' | ''];
 export interface TuneType {
   note: SimpleNote;
-  alte: 'b' | 'd' ;
+  alte: 'b' | 'd' | '' ;
 }
 
 export interface ContextType {
-  currentTune: TuneType;
-  measure: MeasureType;
-  slice: Slice; 
+  tune: SimpleTune | Tune | TuneType;
+  measure?: MeasureType;
+  slice?: Slice; 
 }
 
 export const DUREE = {
-  ronde: 1, ronde_pointee: 1+2,
-  blanche: 2, blanche_pointee: 2+4,
-  noire: 4, noire_pointee: 4+8, noire_ternaire: 4.3,
-  croche: 8, croche_pointee: 8+16, croche_ternaire: 8.3,
-  db_croche: 16, db_croche_pointee: 16 + 32, db_croche_ternaire: 16.3,
-  tr_croche: 32, tr_croche_pointee: 32 + 64, tr_croche_ternaire: 32.3,
-  qu_croche: 64, qu_croche_pointee: 64+128, qu_croche_ternaire: 64.3
+  ronde: 128, ronde_pointee: 128+64,
+  blanche: 64, blanche_pointee: 64+32,
+  noire: 32, noire_pointee: 32+16, noire_ternaire: 32 * 2/3,
+  croche: 16, croche_pointee: 16+8, croche_ternaire: 16 * 2/3,
+  db_croche: 8, db_croche_pointee: 8+4, db_croche_ternaire: 8 * 2.3,
+  tr_croche: 4, tr_croche_pointee: 4+2, tr_croche_ternaire: 4 * 2.3,
+  qu_croche: 2, qu_croche_pointee: 2+1, qu_croche_ternaire: 2 * 2/3,
+  mini: 1
 }
 
 // Note : ci-dessous, le 'implements NoteType' permet juste de

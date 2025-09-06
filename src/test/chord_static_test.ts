@@ -1,18 +1,7 @@
 import { test, expect } from "bun:test";
-import { NOTES } from "./utils_tests";
-import { Note, NoteType } from "../classes/Note";
+import { ut, re, mi, fa, fad, sol, la, lad } from "./utils_tests";
 import { Chord } from "../classes/Chord";
   
-
-const ut = NOTES.do;
-const re = NOTES.re;
-const mi = NOTES.mi;
-const fa = NOTES.fa;
-const fad = NOTES.fad;
-const sol = NOTES.sol;
-const la = NOTES.la;
-const lad = NOTES.lad;
-const notes: NoteType[] = [ut, mi, sol];
 
 /*
 Traite une liste de cas avec seulement un accord
@@ -42,6 +31,10 @@ function CheckCaseMultiList(listeChecks) {
 }
 
 test("Test de la détection des accords (simple, sans note étrangère)", () => { 
+
+  // ======> ÇA NE PASSE PLUS <==========
+  // (excommenter chaque ligne pour voir celles qui posent problème)
+
 
   const listeChecks = [
     //[<ordre donné>], [<accord>], [<foreigners>]

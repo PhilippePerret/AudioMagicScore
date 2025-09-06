@@ -1,8 +1,13 @@
 import { DUREE, Note, NoteType } from "../classes/Note"
 
-const noire = DUREE.noire;
+export const db_croche = DUREE.db_croche;
+export const croche = DUREE.croche;
+export const noire = DUREE.noire;
+export const blanche = DUREE.blanche;
+export const ronde = DUREE.ronde;
 
-const ut: NoteType = {
+
+export const ut: NoteType = {
     rnote: 'c',
     note: 'c', 
     duree: noire,
@@ -12,7 +17,7 @@ const ut: NoteType = {
     chromaticNumber: 1,
     alteration: 0
   } 
-const dod: NoteType = {
+export const utd: NoteType = {
   rnote: 'cis',
   note: 'c',
   alteration: 1,
@@ -22,7 +27,7 @@ const dod: NoteType = {
   absDegree: 1,
   chromaticNumber: 2
 }
-const re: NoteType = {
+export const re: NoteType = {
   rnote: 'd',
   note: 'd',
   alteration: 0,
@@ -32,7 +37,7 @@ const re: NoteType = {
   absDegree: 2,
   chromaticNumber: 3
 }
-const mib: NoteType = {
+export const mib: NoteType = {
   rnote: 'ees',
   note: 'e', 
   alteration: -1,
@@ -42,7 +47,7 @@ const mib: NoteType = {
   absDegree: 3,
   chromaticNumber: 4
 }
-const mi: NoteType = {
+export const mi: NoteType = {
   rnote: 'e',
   note: 'e',
   duree: noire,
@@ -52,7 +57,7 @@ const mi: NoteType = {
   chromaticNumber: 5,
   alteration:0 
 }
-const fa: NoteType = {
+export const fa: NoteType = {
   rnote: 'f',
   note: 'f', 
   duree: noire,
@@ -62,7 +67,7 @@ const fa: NoteType = {
   chromaticNumber: 6,
   alteration: 0
 }
-const fad: NoteType = {
+export const fad: NoteType = {
   rnote: 'fis',
   note: 'f',
   duree: noire,
@@ -72,7 +77,7 @@ const fad: NoteType = {
   chromaticNumber: 7,
   alteration: 1
 }
-const solb: NoteType = {
+export const solb: NoteType = {
   rnote: 'ges',
   note: 'g',
   duree: noire,
@@ -82,7 +87,7 @@ const solb: NoteType = {
   chromaticNumber: 7,
   alteration: -1
 }
-const sol: NoteType = {
+export const sol: NoteType = {
   rnote: 'g',
   note: 'g', 
   duree: noire,
@@ -92,7 +97,7 @@ const sol: NoteType = {
   chromaticNumber: 8,
   alteration: 0
 }
-const sold: NoteType = {
+export const sold: NoteType = {
   rnote: 'gis',
   note: 'g',
   duree: noire,
@@ -102,7 +107,7 @@ const sold: NoteType = {
   chromaticNumber: 9,
   alteration: 1
 }
-const lab: NoteType = {
+export const lab: NoteType = {
   rnote: 'aes',
   note: 'a',
   duree: noire,
@@ -112,7 +117,7 @@ const lab: NoteType = {
   chromaticNumber: 9,
   alteration: -1
 }
-const la: NoteType = {
+export const la: NoteType = {
   rnote: 'a',
   note: 'a',
   duree: noire,
@@ -122,7 +127,7 @@ const la: NoteType = {
   chromaticNumber: 10,
   alteration: 0
 }
-const lad: NoteType = {
+export const lad: NoteType = {
   rnote: 'ais',
   note: 'a',
   duree: noire,
@@ -132,7 +137,7 @@ const lad: NoteType = {
   chromaticNumber: 11,
   alteration: 1
 }
-const sib: NoteType = {
+export const sib: NoteType = {
   rnote: 'bes',
   note: 'b',
   duree: noire,
@@ -142,7 +147,7 @@ const sib: NoteType = {
   chromaticNumber: 11,
   alteration: -1
 }
-const si: NoteType = {
+export const si: NoteType = {
     rnote: 'b',
     note: 'b',
     duree: DUREE.noire,
@@ -154,7 +159,7 @@ const si: NoteType = {
 }
 export const NOTES = {
   c: ut, do: ut, ut: ut,
-  cd: dod, dod: dod, cis: dod,
+  cd: utd, utd: utd, cis: utd,
   d: re, re: re,
   eb: mib, mib: mib, eis: mib,
   e: mi, mi: mi,
@@ -170,3 +175,4 @@ export const NOTES = {
   bb: sib, sib: sib,
   b: si, si: si
 }
+
