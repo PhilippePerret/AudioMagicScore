@@ -37,3 +37,9 @@ export function intervalBetween(note1: NoteType, note2: NoteType): [number, numb
 
   return [degreeInterval, diff];
 }
+
+export function demiTonsBetween(note1: NoteType, note2: NoteType): number {
+  let interv = note2.chromaticNumber - note1.chromaticNumber;
+  if ( interv < 0 ) { interv += 12 ; }
+  return interv;
+}

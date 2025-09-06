@@ -92,6 +92,16 @@ const sol: NoteType = {
   chromaticNumber: 8,
   alteration: 0
 }
+const sold: NoteType = {
+  rnote: 'gis',
+  note: 'g',
+  duree: noire,
+  octave: 4,
+  relDegree: 5,
+  absDegree: 5,
+  chromaticNumber: 9,
+  alteration: 1
+}
 const lab: NoteType = {
   rnote: 'aes',
   note: 'a',
@@ -111,6 +121,16 @@ const la: NoteType = {
   absDegree: 6,
   chromaticNumber: 10,
   alteration: 0
+}
+const lad: NoteType = {
+  rnote: 'ais',
+  note: 'a',
+  duree: noire,
+  octave: 4,
+  relDegree: 6,
+  absDegree: 6,
+  chromaticNumber: 11,
+  alteration: 1
 }
 const sib: NoteType = {
   rnote: 'bes',
@@ -142,8 +162,11 @@ export const NOTES = {
   fad: fad, fd: fad,
   solb: solb, gb: solb,
   sol: sol, g: sol,
+  sold: sold, gd: sold, gis: sold,
   lab: lab, ab: lab, aes: lab,
   a: la, la: la,
+  lad: lad, ad: lad, ais: lad,
+  
   bb: sib, sib: sib,
   b: si, si: si
 }

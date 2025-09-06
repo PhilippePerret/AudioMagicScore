@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
 import { intervalBetween } from "../utils/notes";
 import { DUREE, Note, NoteType } from "../classes/Note";
-import { NOTES } from "./utils";
+import { NOTES } from "./utils_tests";
 
 
 test("Test de la fonction qui calcule l'intervalle entre deux notes", () => {
