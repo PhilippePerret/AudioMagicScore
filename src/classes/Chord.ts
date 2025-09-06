@@ -12,7 +12,9 @@ export class Chord {
    * mais il arrive qu'on puisse en obtenir plusieurs. Il faudra ensuite 
    * choisir le bon en fonction du poids des notes.
    */
-  public static orderNotes(notes: NoteType[]): {chordNotes: Note[], foreignNotes: Note[]}[] {
+  public static detectChords(notes: NoteType[]): {chordNotes: Note[], foreignNotes: Note[]}[] {
+
+    const notesCount = notes.length;
 
     /*
     Ici, plutôt que de manipuler des objets de type NoteType (avec
@@ -29,7 +31,7 @@ export class Chord {
     //  [x, y, undefined, undefined, z, w, k, undefined]
     //
     const bytierces: number[] = [0];  // on commence toujours avec la première…
-    for (var index = 1, len = notes.length; index < len; ++index) {
+    for (var index = 1; index < notesCount ; ++index) {
       const firstNote = notes[bytierces[0]];
       const note = notes[index];
       
@@ -76,7 +78,7 @@ export class Chord {
       } 
     };
 
-    console.log("bytierces", bytierces);
+    // console.log("bytierces", bytierces);
 
     // Maintenant qu'on a une liste avec les notes classées en
     // empilage de tierces, on va regarder les sections continues
@@ -104,7 +106,7 @@ export class Chord {
       resultat = this.dispatchChordNotesInResultat(resultat, chordNotes);
     }
     
-    console.log("résultat du DISPATCH des notes", resultat);
+    // console.log("résultat du DISPATCH des notes", resultat);
 
     /**
      * On ajoute les notes étrangères en construisant le retour de
@@ -116,23 +118,25 @@ export class Chord {
     //    fatalement des notes étrangères
     //  - s'il y a plusieurs accords, les notes des autres accords
     //    sont toujours des notes étrangères pour les autres
-    //    accords
+    //    accords (obsolète, on ne calcule plus comme ça)
     const chords: number[][] = resultat.chords;
-    const foreigners = resultat.foreigners;
     for(var i = 0, len = chords.length; i < len; ++i) {
       const chord = chords[i];
        // Cas de la sixte augmentée allemande
       if ( demiTonsBetween(notes[chord[0]], notes[chord[1]]) === 2 ) {
         chord.push(chord.shift());
       }
-      const chordFound = {chordNotes: chord, foreignNotes: foreigners.slice()};
-      // On ajoute les notes des accords suivants
-      for (var j = i + 1; j < len; ++j) {
-        chordFound.foreignNotes.push(...chords[j]);
+      // Pour les notes étrangères, je crois que le plus simple est 
+      // de passer en revue chaque note
+      const chordSet = new Set(chord);
+      const foreigns = [];
+      for (var f = 0; f < notesCount; ++ f){
+        if ( !chordSet.has(f) ) { foreigns.push(f); }
       }
-      // On met les notes de l'accord courant en notes étrangères
-      // pour les accords suivants
-      foreigners.push(...chord);
+      const chordFound = {
+        chordNotes: chord, 
+        foreignNotes: foreigns
+      };
 
       console.log("chordFound avant remise des notes", chordFound);
 
@@ -145,19 +149,6 @@ export class Chord {
      // On ajoute cet accord à la liste des accords
       chordsFound.push(finalChordFound);
     };
-    // Note : étudier quand même le cas où l'on a seulement
-    // une tierce, une quinte
-    // Il y aura quand même un problème si l'accord n'a que
-    // deux notes et qu'il existe dans les notes étrangères
-    // un autre accord possible. Mais ici, le point des notes
-    // doit pouvoir intervenir => RÈGLE : un accord qui a des
-    // notes qui ont un poids insuffisant (la durée joue pour
-    // beaucopup dans ce poids). TODO Mais ça doit être fait
-    // ailleurs, ici, on ne cherche que les accords.
-
-
-
-
 
     return chordsFound; 
   } 
@@ -169,7 +160,18 @@ export class Chord {
    */
   private static dispatchChordNotesInResultat(resultat: any, notes: number[]) {
     if (notes.length >= 3) {
-      resultat.chords.push(notes);
+      // Traitement des cas où l'on se retrouve avec plus de notes
+      // que normalement
+      if (notes.length > 4) {
+        while(notes.length > 3){
+          if ( notes.length > 4 ) { resultat.chords.push( notes.slice(0, 5));}
+          resultat.chords.push(notes.slice(0,4));
+          notes.shift();
+        }
+        resultat.chords.push(notes);
+      } else {
+        resultat.chords.push(notes);
+      }
     } else {
       resultat.foreigners.push(...notes);
     }
