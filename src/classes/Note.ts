@@ -1,3 +1,6 @@
+import { MeasureType } from "./Measure";
+import { Slice } from "./Slice";
+
 /**
  * Type NoteType
  * 
@@ -5,16 +8,29 @@
  */
 type SimpleNote = 'a'|'b'|'c'|'d'|'e'|'f'|'g';
 type RealNote = `${SimpleNote}${''|'es'|'is'|'eses'|'isis'}`;
+type DureeType = number | 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 3 /*1.*/ | 6 /*2.*/ | 12 /*4.*/ ;
+type ChromaticNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export interface NoteType {
   rnote: RealNote;  // p.e. 'eisis'
   note: SimpleNote; // seulement la lettre de la note, p.e. 'e'
   alteration: 0 | 1 | -1 | 2 | -2;
   octave: -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-  duree: number | 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 3 /*1.*/ | 6 /*2.*/ | 12 /*4.*/ ;
+  duree: DureeType; 
   relDegree: number;
   absDegree?: number;
-  chromaticNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  chromaticNumber: ChromaticNumber; 
+}
+
+export interface TuneType {
+  note: SimpleNote;
+  alte: 'b' | 'd' ;
+}
+
+export interface ContextType {
+  currentTune: TuneType;
+  measure: MeasureType;
+  slice: Slice; 
 }
 
 export const DUREE = {
@@ -26,7 +42,27 @@ export const DUREE = {
   tr_croche: 32, tr_croche_pointee: 32 + 64, tr_croche_ternaire: 32.3,
   qu_croche: 64, qu_croche_pointee: 64+128, qu_croche_ternaire: 64.3
 }
-export class Note {
+
+// Note : ci-dessous, le 'implements NoteType' permet juste de
+// s'assurer que Note possèdera bien toutes les propriétés de
+// l'interface NoteType définie ci-dessus.
+export class Note implements NoteType {
+  rnote: RealNote;
+  note: SimpleNote;
+  alteration: 0 | 1 | -1 | 2 | -2;
+  octave: 0 | 1 | -1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  duree: DureeType;
+  relDegree: number;
+  absDegree?: number;
+  chromaticNumber: ChromaticNumber;
+
+  constructor(
+    data: NoteType, 
+    context: ContextType 
+  ) {
+    for(var prop in data) { this[prop] = data[prop];}
+  }
+  
   static readonly DIST4INTERV = {
     // La clé représente l'intervalle simple (seconde, tierce
     // quarte, etc.) et la valeur le nombre de demi-tons qu'il

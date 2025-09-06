@@ -1,3 +1,4 @@
 {
-  "workbench.editor.closeEmptyGroups": false
+  "workbench.editor.closeEmptyGroups": false,
+  "editor.acceptSuggestionOnCommitCharacter": false
 }
