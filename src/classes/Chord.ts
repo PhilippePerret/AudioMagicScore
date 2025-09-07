@@ -98,8 +98,10 @@ export class Chord {
       } 
     };
 
+    /*
     console.log("bytierces", bytierces);
     console.log("variantes", variantes);
+    //*/
 
     // Maintenant qu'on a une liste avec les notes classées en
     // empilage de tierces, on va regarder les sections continues
@@ -127,7 +129,7 @@ export class Chord {
       resultat = this.dispatchChordNotesInResultat(resultat, chordNotes);
     }
     
-    console.log("résultat du DISPATCH des notes", resultat);
+    // console.log("résultat du DISPATCH des notes", resultat);
 
     // Fonction interne retournant les notes étrangères à l'accord
     // +chord+ fourni en argument
@@ -163,7 +165,7 @@ export class Chord {
     for(var i = 0, len = chords.length; i < len; ++i) {
       const chord = chords[i];
        // Cas de la sixte augmentée allemande
-      if ( demiTonsBetween(notes[chord[0]], notes[chord[1]]) === 2 ) {
+      if ( 2 === demiTonsBetween(notes[chord[0]], notes[chord[1]])) {
         chord.push(chord.shift());
       }
       // Pour les notes étrangères, le plus simple est de passer en 
@@ -191,12 +193,13 @@ export class Chord {
       // [ut, mi, sol] et [ut, mi, sol#]
       if (variantes.size) { // Seulement si des variantes ont été enregistrées
         const varChords = this.getAllChordVariantes(chord, variantes);
-        console.log("Toutes les variantes", varChords);
+        // console.log("Toutes les variantes", varChords);
         varChords.shift(); // Le premier est toujours l'original
         // On ajoute les variants (s'il y en a, bien sûr) à la liste des
         // accords trouvés
         varChords.forEach( vchord => {
           const foreigners = getForeignNotesInChord(vchord);
+          // console.log("Chord and Foreigners (notes)", vchord, foreigners, notes);
           const finalChord = {
             chordNotes: realNotes(vchord),
             foreignNotes: realNotes(foreigners)
@@ -310,7 +313,7 @@ export class Chord {
   constructor(params: ChordParamType) {
     this.notes = params.notes;
     this.context = params.context;
-    this.id = crypto.randomUUID();
+    this.id = params.id || crypto.randomUUID();
   }
 
   /**
@@ -333,7 +336,7 @@ export class Chord {
     //    On additionne pour chaque note et on divise par le nombre de
     //    notes.
       const poidsDuree = this.notes.reduce(
-        (accum, note) => accum + this.pointDureeOf(note.duree),
+        (accum, note) => accum + this.pointDureeFor(note.duree),
         0
       ) / this.notes.length * 10 ;
 
@@ -351,7 +354,7 @@ export class Chord {
     return poids ;
   }
 
-  pointDureeOf(duree: DureeType) {
+  pointDureeFor(duree: DureeType) {
     if      /* courte à très courte */ (duree < DUREE.croche) { return 0 }
     else if /* moyenne */ (duree <= DUREE.noire) { return 1 }
     else    /* longue à très longue */ { return 2 }

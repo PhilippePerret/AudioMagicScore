@@ -10,6 +10,8 @@ import { Note, NoteType } from "../classes/Note";
  * 2) de son poids
  */
 
+// Pour DUPliquer une note (NoteType) en fournissant d'autres valeurs
+// si nécessaire.
 function dup(note: NoteType, newVals: {[x: string]: any} ) {
   return Object.assign({...note}, newVals);
 }

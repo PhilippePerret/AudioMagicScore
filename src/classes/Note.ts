@@ -16,10 +16,26 @@ export interface NoteType {
   note: SimpleNote; // seulement la lettre de la note, p.e. 'e'
   alteration: 0 | 1 | -1 | 2 | -2;
   octave: -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-  duree: DureeType; 
+  duree: DureeType; // Durée totale dans la tranche 
   relDegree: number;
   absDegree?: number;
   chromaticNumber: ChromaticNumber; 
+}
+
+/**
+ * Ce type sert à gérer les notes de façon absolue dans l'analyse de
+ * l'harmonie. Pour cette analyse, on se fiche de connaitre l'octave
+ */
+export interface AbsNoteType {
+  rnote: RealNote;
+  note: SimpleNote;
+  alteration: 0 | 1 | -1 | 2 | -2;
+  duree: DureeType;
+  relDegree: number;
+  absDegree: number;
+  chromaticNumber: ChromaticNumber;
+  occurrence: number; // nombre de citation dans la tranche
+  isLower: boolean; // true si c'est la note la plus basse de la tranche
 }
 
 // Pour la tonalité, version simple [<note>, <altération>] ou TuneType

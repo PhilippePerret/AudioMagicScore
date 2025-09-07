@@ -18,8 +18,8 @@ test("Test de la fonction qui calcule l'intervalle entre deux notes", () => {
     [NOTES.do, NOTES.sib, [7,0]],
 
     [NOTES.re, NOTES.do, [7,0]],
-    [NOTES.sol, NOTES.dod, [4, 1]],
-    [NOTES.lab, NOTES.dod, [3, 1]],
+    [NOTES.sol, NOTES.utd, [4, 1]],
+    [NOTES.lab, NOTES.utd, [3, 1]],
     [NOTES.si, NOTES.do, [2, -1]]
   ]
   liste.forEach( ary => {

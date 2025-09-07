@@ -17,14 +17,17 @@ function checkCaseList(listeChecks) {
   })
 }
 
-function errorMessageFor(chord: NoteType[], compChord: NoteType[]): string {
-  function chord2str(chord) {
+function errorMessageFor(givenNotes: NoteType[], expectChord: NoteType[], actualChord: NoteType[]): string {
+  function chord2str(chord: NoteType[]) {
     return '[' + chord.map(n => n.rnote).join(', ') + ']';
   }
   const msg = []
-  msg.push(chord2str(chord));
-  msg.push('≠');
-  msg.push(chord2str(compChord));
+  msg.push("\n");
+  msg.push('Give:     ' + chord2str(givenNotes));
+  msg.push("\n");
+  msg.push('Expected: ' + chord2str(expectChord));
+  msg.push("\n");
+  msg.push('Actual:   ' + chord2str(actualChord));
   return msg.join(' ');
 }
 /* 
@@ -36,10 +39,10 @@ const checkCaseMultiList = (listeChecks) => {
     res.forEach((found, index) => {
       const [chord, foreigners] = founds[index];
       if ( !deepEquals(chord, found.chordNotes) ) {
-        throw new Error(errorMessageFor(chord, found.chordNotes));
+        throw new Error(errorMessageFor(given, chord, found.chordNotes));
       }
       if (!deepEquals(foreigners, found.foreignNotes)){
-        throw new Error(errorMessageFor(foreigners, found.foreignNotes));
+        throw new Error(errorMessageFor(given, foreigners, found.foreignNotes));
       }
     })
   })
@@ -83,9 +86,9 @@ test("Détection des accords (avec notes étrangères)", ()=>{
 
 })
 
-test.only("Détection des accords avec notes identiques", ()=> {
+test("Détection des accords avec notes identiques", ()=> {
   const listeChecks = [
-    /*
+    //*
     [[ut, mi, sol, sold], [
       [[ut, mi, sol], [sold]],
       [[ut, mi, sold], [sol]]
@@ -101,12 +104,13 @@ test.only("Détection des accords avec notes identiques", ()=> {
     ]],
     //*/
 
-    /*
+    //*
     // Avec une note à deux variantes
-    [[ut, mi, sol, solb, sol, sold], [
-      [[ut, mi, solb], [sol, sold]],
+    // Ce cas teste aussi les variantes pour les notes étrangères
+    [[ut, mi, sol, solb, sold], [
       [[ut, mi, sol], [solb, sold]],
-      [[ut, mi, sold], [solb, sol]]
+      [[ut, mi, solb], [sol, sold]],
+      [[ut, mi, sold], [sol, solb]]
     ]]
     //*/
   ]

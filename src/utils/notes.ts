@@ -5,6 +5,8 @@
 import { Note, NoteType } from "../classes/Note";
 
 /**
+ * @return [<intervalle>, <altération>]
+ * 
  * Calcul l'intervalle entre deux notes et retourne une paire qui indique
  * en premier nombre l'intervalle simple (3 pour tierce, 6 pour sixte, etc.)
  * et en deuxième nombre l'altération de cet interval (0 pour quinte juste,
@@ -26,7 +28,7 @@ import { Note, NoteType } from "../classes/Note";
  */
 export function intervalBetween(note1: NoteType, note2: NoteType): [number, number] {
   
-  let degreeInterval:number = note2.absDegree - note1.absDegree;
+  let degreeInterval:number = note2.relDegree - note1.relDegree;
   if (degreeInterval < 0) { degreeInterval += 7}
   ++degreeInterval; 
 
