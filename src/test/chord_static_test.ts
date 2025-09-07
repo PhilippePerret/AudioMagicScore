@@ -1,12 +1,14 @@
 import { test, expect } from "bun:test";
-import { ut, re, mi, fa, fad, sol, la, lad } from "./utils_tests";
+import { ut, re, mi, fa, fad, sol, la, lad, sold, utd, solb } from "./utils_tests";
 import { Chord } from "../classes/Chord";
+import { NoteType } from "../classes/Note";
+import { deepEquals } from "bun";
   
 
 /*
 Traite une liste de cas avec seulement un accord
 */
-function CheckCaseList(listeChecks) {
+function checkCaseList(listeChecks) {
   listeChecks.forEach( ([given, sorted, foreigners]) => {
     const res = Chord.detectChords(given);
     const acc = res[0];
@@ -15,26 +17,36 @@ function CheckCaseList(listeChecks) {
   })
 }
 
+function errorMessageFor(chord: NoteType[], compChord: NoteType[]): string {
+  function chord2str(chord) {
+    return '[' + chord.map(n => n.rnote).join(', ') + ']';
+  }
+  const msg = []
+  msg.push(chord2str(chord));
+  msg.push('≠');
+  msg.push(chord2str(compChord));
+  return msg.join(' ');
+}
 /* 
 Traite une liste de cas avec des retours à plusieurs accords
 */
-function CheckCaseMultiList(listeChecks) {
+const checkCaseMultiList = (listeChecks) => {
   listeChecks.forEach(([given, founds]) =>{
     const res = Chord.detectChords(given);
     res.forEach((found, index) => {
       const [chord, foreigners] = founds[index];
-      expect(chord).toEqual(found.chordNotes);
-      expect(foreigners).toEqual(found.foreignNotes);
+      if ( !deepEquals(chord, found.chordNotes) ) {
+        throw new Error(errorMessageFor(chord, found.chordNotes));
+      }
+      if (!deepEquals(foreigners, found.foreignNotes)){
+        throw new Error(errorMessageFor(foreigners, found.foreignNotes));
+      }
     })
   })
 
 }
 
 test("Test de la détection des accords (simple, sans note étrangère)", () => { 
-
-  // ======> ÇA NE PASSE PLUS <==========
-  // (excommenter chaque ligne pour voir celles qui posent problème)
-
 
   const listeChecks = [
     //[<ordre donné>], [<accord>], [<foreigners>]
@@ -54,7 +66,7 @@ test("Test de la détection des accords (simple, sans note étrangère)", () => 
     [[lad, mi, sol, ut], [ut, mi, sol, lad], []],
   ];
 
-  CheckCaseList(listeChecks);
+  checkCaseList(listeChecks);
 
 });
 
@@ -67,8 +79,38 @@ test("Détection des accords (avec notes étrangères)", ()=>{
     [[fa, fad, sol, mi, ut], [ut, mi, sol], [fa, fad]],
   ]
 
-  CheckCaseList(listeChecks);
+  checkCaseList(listeChecks);
 
+})
+
+test.only("Détection des accords avec notes identiques", ()=> {
+  const listeChecks = [
+    /*
+    [[ut, mi, sol, sold], [
+      [[ut, mi, sol], [sold]],
+      [[ut, mi, sold], [sol]]
+    ]],
+    //*/
+    //*
+    // Avec deux notes à variantes
+    [[ut, utd, mi, sol, sold], [
+      [[ut, mi, sol], [utd, sold]],
+      [[ut, mi, sold], [utd, sol]],
+      [[utd, mi, sol], [ut, sold]],
+      [[utd, mi, sold], [ut, sol]]
+    ]],
+    //*/
+
+    /*
+    // Avec une note à deux variantes
+    [[ut, mi, sol, solb, sol, sold], [
+      [[ut, mi, solb], [sol, sold]],
+      [[ut, mi, sol], [solb, sold]],
+      [[ut, mi, sold], [solb, sol]]
+    ]]
+    //*/
+  ]
+  checkCaseMultiList(listeChecks);
 })
 
 test("Détection des accords (avec plusieurs accords)", ()=>{
@@ -87,5 +129,5 @@ test("Détection des accords (avec plusieurs accords)", ()=>{
       ]
     ]
   ]
-  CheckCaseMultiList(listeChecks);
+  checkCaseMultiList(listeChecks);
 })

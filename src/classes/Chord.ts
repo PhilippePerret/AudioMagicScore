@@ -31,6 +31,22 @@ export class Chord {
     //  [x, y, undefined, undefined, z, w, k, undefined]
     //
     const bytierces: number[] = [0];  // on commence toujours avec la première…
+    // Pour conserver les variantes, c'est-à-dire les notes iden-
+    // tiques (sol et sol#) dont on doublera les accords plus tard. 
+    // C'est-à-dire que si on a par exemple ut, mi, sol et sol#, on
+    // prend l'accord [ut, mi, sol], on enregistre le fait que sol
+    // a une variante sol# et au moment de consigner l'accord on le
+    // double avec l'accord [ut, mi, sol#]
+    let variantes: Map<number, number[]> = new Map();
+    // Méthode permettant d'ajouter une variante
+    function addVariante(vars: Map<number, number[]>, indice: number, variant: number): Map<number, number[]> {
+      vars.has(indice) || vars.set(indice, []);
+      const newVars = vars.get(indice);
+      newVars.push(variant);
+      vars.set(indice, newVars);
+      return vars;
+    }
+
     for (var index = 1; index < notesCount ; ++index) {
       const firstNote = notes[bytierces[0]];
       const note = notes[index];
@@ -38,14 +54,18 @@ export class Chord {
       // console.log("Comparaison entre", firstNote, note, bytierces);
       let val;
       switch(val = intervalBetween(firstNote, note)[0]){
+        case 1: // p.e. Fa et Fad
+          variantes = addVariante(variantes, bytierces[0], index);
+          break;
         case 2: // <= first = septième, note = fond
-          bytierces.unshift(index, undefined, undefined); break;
+          bytierces.unshift(index, undefined, undefined); 
+          break;
         case 3: 
           if ( bytierces.length >= 2 ) { 
             if ( bytierces[1] === undefined ) {
               bytierces[1] = index;
             } else {
-              throw new Error("Place déjà prise pour la Tierce !");
+              variantes = addVariante(variantes, bytierces[1], index);
             }
           } else {
             bytierces.push(index);
@@ -59,7 +79,7 @@ export class Chord {
           if ( bytierces[2] === undefined) {
             bytierces[2] = index;
           } else {
-            throw new Error("Place déjà prise pour la Quinte !")
+            variantes = addVariante(variantes, bytierces[2], index);
           }
           break;
         case 6:
@@ -70,15 +90,16 @@ export class Chord {
           if ( bytierces[3] === undefined) {
             bytierces[3] = index;
           } else {
-            throw new Error("Place déjà prise pour la Septième !");
+            variantes = addVariante(variantes, bytierces[3], index);
           }
           break;
         default:
-          console.error("Valeur non traitée : %s", val);
+          console.error("Valeur d'intervalle non traitée : %s", val);
       } 
     };
 
-    // console.log("bytierces", bytierces);
+    console.log("bytierces", bytierces);
+    console.log("variantes", variantes);
 
     // Maintenant qu'on a une liste avec les notes classées en
     // empilage de tierces, on va regarder les sections continues
@@ -106,7 +127,26 @@ export class Chord {
       resultat = this.dispatchChordNotesInResultat(resultat, chordNotes);
     }
     
-    // console.log("résultat du DISPATCH des notes", resultat);
+    console.log("résultat du DISPATCH des notes", resultat);
+
+    // Fonction interne retournant les notes étrangères à l'accord
+    // +chord+ fourni en argument
+    function getForeignNotesInChord(chord: number[]): number[] {
+      const foreigns = [];
+      if (chord.length < notesCount) {
+        const chordSet = new Set(chord);
+        for (var f = 0; f < notesCount; ++f) {
+          if (!chordSet.has(f)) { foreigns.push(f); }
+        }
+      }
+      return foreigns;
+    }
+
+    // Fonction interne recevant les index et retournant les "vraies"
+    // notes de l'accord.
+    function realNotes(indexList: number[]): NoteType[] {
+      return indexList.map(i => notes[i]);
+    }
 
     /**
      * On ajoute les notes étrangères en construisant le retour de
@@ -126,34 +166,75 @@ export class Chord {
       if ( demiTonsBetween(notes[chord[0]], notes[chord[1]]) === 2 ) {
         chord.push(chord.shift());
       }
-      // Pour les notes étrangères, je crois que le plus simple est 
-      // de passer en revue chaque note
-      const foreigns = [];
-      if (chord.length < notesCount) {
-        const chordSet = new Set(chord);
-        for (var f = 0; f < notesCount; ++f) {
-          if (!chordSet.has(f)) { foreigns.push(f); }
-        }
-      }
+      // Pour les notes étrangères, le plus simple est de passer en 
+      // revue chaque note
+      const foreigns = getForeignNotesInChord(chord);
+      
+      // On enregistre l'accord de base, souvent le seul
       const chordFound = {
         chordNotes: chord, 
         foreignNotes: foreigns
       };
 
-      console.log("chordFound avant remise des notes", chordFound);
+      // console.log("chordFound avant remise des notes", chordFound);
 
-      // On remplace les index par les notes et on enregistre cette
+     // On remplace les index par les notes et on enregistre cette
       // possibilité
       const finalChordFound = { chordNotes: [], foreignNotes: [] };
-      finalChordFound.chordNotes = chordFound.chordNotes.map(i => notes[i]);
-      finalChordFound.foreignNotes = chordFound.foreignNotes.map(i => notes[i]);
+      finalChordFound.chordNotes = realNotes(chordFound.chordNotes);
+      finalChordFound.foreignNotes = realNotes(chordFound.foreignNotes);
 
-     // On ajoute cet accord à la liste des accords
+      // On ajoute cet accord à la liste des accords
       chordsFound.push(finalChordFound);
+
+      // On traite les éventuelles VARIANTES de cet accord, i.e. les
+      // [ut, mi, sol] et [ut, mi, sol#]
+      if (variantes.size) { // Seulement si des variantes ont été enregistrées
+        const varChords = this.getAllChordVariantes(chord, variantes);
+        console.log("Toutes les variantes", varChords);
+        varChords.shift(); // Le premier est toujours l'original
+        // On ajoute les variants (s'il y en a, bien sûr) à la liste des
+        // accords trouvés
+        varChords.forEach( vchord => {
+          const foreigners = getForeignNotesInChord(vchord);
+          const finalChord = {
+            chordNotes: realNotes(vchord),
+            foreignNotes: realNotes(foreigners)
+          }
+          chordsFound.push(finalChord);
+        })
+      }
     };
 
     return chordsFound; 
-  } 
+  }
+  private static getAllChordVariantes(chord: number[], variantes: Map<number, number[]>) {
+    const results = [];
+
+    function generateVariants(currentChord, index) {
+      if (index === chord.length) {
+        results.push([...currentChord]);
+        return;
+      }
+
+      const originalValue = chord[index];
+      const variants = variantes.get(originalValue) || [];
+
+      // Toujours inclure la valeur originale
+      currentChord[index] = originalValue;
+      generateVariants(currentChord, index + 1);
+
+      // Puis essayer chaque variante
+      for (const variant of variants) {
+        currentChord[index] = variant;
+        generateVariants(currentChord, index + 1);
+      }
+    }
+
+    generateVariants([...chord], 0);
+    return results;
+  }
+
   /**
    * 
    * @param resultat Table du résultat
