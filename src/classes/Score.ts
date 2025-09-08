@@ -35,6 +35,8 @@ interface StaffType {
 
 interface ScoreType {
   staffs: StaffType[];
+  metadata: ScoreMetadataType;
+  measures: MeasureType[];
 }
 
 /**
@@ -42,6 +44,7 @@ interface ScoreType {
  */
 const xmlPaths = {
   base: 'mei.music.body.mdiv.score',
+  measures: {multi: true, in: 'section', tag: 'measure'},
   staffs: 'scoreDef.staffGrp.staffGrp', // attention, je pense qu'il peut y avoir plusieurs "staffgrp", le premier staffGrp doit signifie 'staffGroups' (noter le "s") et le second 'staffGroup' (le groupe de staffs en question) 
   staff: {multi: true, in: 'staffs', tag: 'StaffDef'}, 
   clef: {in: 'staff', tag: 'clef'},
@@ -65,11 +68,25 @@ export class Score implements ScoreType {
     existsSync(this.path) || throwError('mei-file-unfound', [this.path]); 
     const xmlData = readFileSync(this.path, "utf-8");
     this.data = this.parseXMLData(xmlData);
+    this.parseScoreMetadata();
+    this.parseStaffsData();
   }
 
   private _staffsgrps;
   private get staffsGroup() {
     return this._staffsgrps || (this._staffsgrps = this.searchXML(xmlPaths.staffs));
+  }
+
+
+  /**
+   * RELÈVE et DISPATCH DES NOTES
+   * 
+   * C'est le gros morceau du parsing.
+   * 
+   */
+  parseMeasures(){
+    console.log('Mesures:', this.searchXML('section').measure); 
+
   }
   /**
    * Relève les données générales du score
@@ -79,7 +96,6 @@ export class Score implements ScoreType {
     this.metadata = {
       label: staffsGroup.label['#text']
     };
-
   }
   /**
    * Relève les données générales des portées (clé, armure, métrique)
