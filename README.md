@@ -17,6 +17,15 @@ Utiliser **bun** pour développer, donc du TypeScript/Javascript, qui peut être
 
 Jouer : **`bun run main.ts`**
 
+## Fichier XML de la partition
+
+* Ouvrir le fichier PDF de la partition dans **Audiveris**
+* Exporter en musicXML (fichier `.mxl`
+* Le transformer en XML (MEI) avec `verovio -f xml -t mei -o <converti>.mei <fichier audiveris>`
+* C’est ce fichier qu’on donne à ` new Score(path)`
+
+
+
 ## Algorithme d’harmonisation
 
 C’est le vraiment gros morceau de l’application, qui doit permettre de déduire les accords, les modulations et les emprunts.
