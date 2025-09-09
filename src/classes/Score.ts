@@ -61,7 +61,6 @@ interface ScoreType {
  * Les chemins XML à utiliser pour trouver les informations.
  */
 const xmlPaths = {
-  base: 'mei.music.body.mdiv.score',
   measures: {multi: true, in: 'section', tag: 'measure'},
   staffs: 'scoreDef.staffGrp.staffGrp', // attention, je pense qu'il peut y avoir plusieurs "staffgrp", le premier staffGrp doit signifie 'staffGroups' (noter le "s") et le second 'staffGroup' (le groupe de staffs en question) 
   staff: {multi: true, in: 'staffs', tag: 'StaffDef'}, 
@@ -73,9 +72,9 @@ const xmlPaths = {
 
 export class Score implements ScoreType {
   piece: Piece;
-  data: JSON;       // les data XML, en préservant les objets
-  orderData: JSON; // les data XML, en préservant l'ordre
   metadata: ScoreMetadataType;
+  scoreDefData: JSON;
+  measuresData: JSON;
   measures: MeasureType[];
 
   constructor(
@@ -103,14 +102,12 @@ export class Score implements ScoreType {
    */
   parse() {
     existsSync(this.path) || throwError('mei-file-unfound', [this.path]); 
-    const xmlData = readFileSync(this.path, "utf-8");
-    this.parseXMLScoreDef(xmlData);
-    this.parseXMLMeasures(xmlData);
+    const xmlCode = readFileSync(this.path, "utf-8");
+    this.parseXMLScoreDef(xmlCode);
+    this.parseXMLMeasures(xmlCode);
  }
 
-  scoreDefData: JSON;
-  measuresData: JSON;
-  /**
+    /**
    * On parse le bloc XML de définition du score
    * 
    * @param xml Bloc de code total
@@ -374,9 +371,10 @@ export class Score implements ScoreType {
   }
 
   searchXML(path: string){
-    if (!path.startsWith('mei')) { path = xmlPaths.base + '.' + path; }
-    let currentObject = this.data;
+    let currentObject = this.scoreDefData;
+    console.log("path", path);
     path.split('.').forEach(name => {
+      console.log("currentObjet / name", currentObject, name);
       currentObject = currentObject[name];
     })
     return currentObject;
