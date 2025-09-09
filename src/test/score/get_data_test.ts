@@ -5,18 +5,20 @@ function getScore(){
 const path = "./assets/xml/preludeEbm.mei";
   const score = new Score(path);
   score.parse();
-return score;
+  return score;
 }
-test("On peut récupérer les méta-données du score", () => {
+test.only("On peut récupérer les méta-données du score", () => {
   const score = getScore();
-  score.parseScoreMetadata();
+  score.retrieveMetadata();
+  console.log("ScoreDefData", score.scoreDefData);
   const meta = score.metadata;
   // --- Vérifications ---
   expect(meta.label).toEqual('Piano');
 })
 test("On peut récupérer les données d'un fichier Audioveris", () => {
   const score = getScore();
-  score.parseStaffsData();
+  score.retrieveMeasures();
+  console.log("measuresData", score.measuresData);
   const staffs = score.staffs;
   // console.log("Staffs", staffs);
   // --- Vérifications ---
@@ -31,5 +33,5 @@ test("On peut récupérer les données d'un fichier Audioveris", () => {
 
 test.only("On peut parser les notes", () => {
   const score = getScore();
-  score.parseMeasures();
+  score.retrieveMeasures();
 });
