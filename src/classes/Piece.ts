@@ -1,4 +1,4 @@
-import { Score } from "./Score";
+import { Score } from "./ScoreParser";
 
 export class Piece {
   name: string;

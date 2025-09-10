@@ -23,7 +23,7 @@ export interface MEIAttributes {
 
 export interface MEIMesureType {
   numero: number;
-  portees: {voix: any, attrs: any}[];
+  portees: {voices: any, attrs: any}[];
   assets: {type: 'tie' | 'slur' | 'arpeg' | 'mordent', attrs: MEIAttributes}[];
 }
 
