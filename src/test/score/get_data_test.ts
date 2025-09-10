@@ -26,10 +26,14 @@ test("On peut récupérer les méta-données d'une page de partition", () => {
   expect(staff2.metrique).toEqual([3, 2]);
   // console.log("staffs", staffs);
 })
-test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichier de partition)", () => {
+test.only("Essaie de totale récupération", () => {
+  const score = getScore();
+  score.treate();
+});
+test("Le parseur peut récupérer les données note d'un fichier MEI (fichier de partition)", () => {
   const score = getScore();
   const mesures = score.retrieveMeasures();
-  console.log("Mesures :", mesures);
+  // console.log("Mesures :", mesures);
   // --- Vérification ---
   // Il doit y avoir 14 mesures
   expect(mesures.length).toBe(14);
@@ -38,7 +42,7 @@ test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichi
     const mesure = mesures[i];
     expect(mesure).toContainAllKeys(['numero', 'portees', 'assets']);
     expect(mesure.numero).toBe(expectedNum);
-    console.log("portée", mesure.portees);
+    // console.log("portée", mesure.portees);
     expect(mesure.portees).toBeArray();
     // Il y a 2 portées dans toutes les mesures
     expect(mesure.portees.length).toBe(2); 
@@ -60,14 +64,14 @@ test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichi
 
   // La mesure 6 pour les différentes voices
   mes = mesures[5];
-  console.log("Mesure 6 : ", mes);
+  // console.log("Mesure 6 : ", mes);
   md = mes.portees[0];
   mg = mes.portees[1]; 
-  console.log("Main droite de mesure six : ", md);
+  // console.log("Main droite de mesure six : ", md);
   expect(md.attrs.staffNum).toBe(1);
   expect(mg.attrs.staffNum).toBe(2);
   expect(md.voices).toBeArray();
-  console.log("Première voices de la main droite", md.voices[0]);
+  // console.log("Première voices de la main droite", md.voices[0]);
   // La première voices de la main droite contient 3 mib d'octave
   // 5 en blanche
   v1_md = md.voices[0];
@@ -83,18 +87,20 @@ test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichi
   // Ils contiennent les trois les notes solb dob en arpège et le
   // premier contient en plus la note mib
   v2_md = md.voices[1];
-  console.log("Deuxième voix de la main droite : ", v2_md); 
+  // console.log("Deuxième voix de la main droite : ", v2_md); 
   for (n1 of v2_md) {
-    expect(n1).toContainAllKeys(['type', 'id', 'duree', 'ppq', 'notes']);
+    expect(n1).toContainAllKeys(['type', 'id', 'duree', 'ppq', 'notes', 'objets']);
     expect(n1.type).toBe('chord');
     expect(n1.duree).toBe(2);
-    console.log("Notes de l'accord", n1.notes);
+    // console.log("Notes de l'accord", n1.notes);
     expect(n1.notes.length).toBeWithin(2, 4); 
     // Les notes ne doivent pas avoir de durée
     for (n2 of n1.notes) {
       expect(n2.duree).toBeUndefined();
       expect(n2.ppq).toBeUndefined();
     }
+    console.log("Objets de l'accord", n1.objets); // doit contenir l'arpège
+
   }
   // Dans l'accord (ou la mesure), on doit aussi trouver l'arpègiation
   // TODO

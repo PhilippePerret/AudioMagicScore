@@ -1,5 +1,7 @@
 # TODO
 
+* J'en suis à : faire que l'association d'éléments fonctionne (arpège associé à accord)
+* Puis poursuivre l'étude testée de la relève des notes.
 
 Quand j'aurais un algorithme qui fonctionnera à peu près, passer le test avec le "MENUET DE TRIO" (dans les plus beaux préludes de Bach). En fait, ça peut être un morceau test, tant il est complexe.
 

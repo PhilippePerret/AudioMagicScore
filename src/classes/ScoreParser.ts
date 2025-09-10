@@ -30,10 +30,13 @@ const FastXmlOrderedParserOptions = {
   allowBooleanAttributes: true
 }
 
-import { MeasureType, MEIAttributes, MEIMesureType } from "./Measure";
+import { MeasureType, MEIAttributes, MEIMesureType, MEIPorteeType } from "./Measure";
 import { Piece } from "./Piece";
 import { throwError } from "../utils/message";
 import { ALTER_STR_TO_ALTER_NB } from "../utils/music_constants";
+import { Note } from "./Note";
+import { AnyAssociableObjet, AnyAssociatedObjet, Associator } from "./Associator";
+import { MEIAnyObjet } from "./Objet";
 
 type CleType = 'G' | 'F' | 'C' ; // clé de la portée
 type LineType = 1 | 2 | 3 | 4 | 5 ; // Ligne de la clé (3, pour UT3 p.e.)
@@ -96,6 +99,28 @@ export class ScorePageParser implements ScoreType {
     this.retrieveMetadata();
     this.parseStaffsData();
     this.measures = this.retrieveMeasures(); // récupération des notes et des mesures
+    this.retreivePlainOwnerInAssociator();
+  }
+
+  /**
+   * Récupération des propriétaires avec leurs associés
+   */
+  retreivePlainOwnerInAssociator(){
+    let owner: AnyAssociableObjet;
+
+    this.measures.forEach((mesure: MEIMesureType) => {
+      mesure.portees.forEach((portee: MEIPorteeType) => {
+        portee.voices.forEach((voice: any /* todo: à mieux définir */)=> {
+          // On passe en revue chaque objet de la voix, note, silence,
+          // accord
+          voice.forEach((objet: MEIAnyObjet) => {
+            if ( (owner = Associator.getIfAssociabilized(objet.id))){
+              console.log("OWNER ASSOCIÉ (et objet présent)", owner, objet);
+            }
+          });
+        });
+      });
+    });
   }
 
   /**
@@ -122,7 +147,7 @@ export class ScorePageParser implements ScoreType {
    */
   parseXMLScoreDef(xml: string): void {
     const blocScoreDef = this.readRawCode(xml, 'scoreDef');
-    console.log("bloc scoredef", blocScoreDef);
+    // console.log("bloc scoredef", blocScoreDef);
     this.scoreDefData = (new XMLParser(FastXmlParserOptions)).parse(blocScoreDef);
   }
 
@@ -177,9 +202,30 @@ export class ScorePageParser implements ScoreType {
    *        {élément de portée N}
    *      ]
    *    }
+   * 
+   * 
+   * Système des associations (Associator)
+   * ------------------------
+   * Une des difficultés de la relève optimum, c'est que des infor-
+   * mations sur les objets peuvent être disséminés à différents en-
+   * droits. Typiquement, un accord arpégé peut voir son signe "arp-
+   * égé" être enregistré autre part, tout au fond de la staff.
+   * Pour paler ce problème, on utilise l'Associator qui va justement
+   * permettre de faire ces associations. On lui envoie tous les 
+   * objets qui peuvent être des propriétaires (ici les accords) et
+   * on envoie ensuite les objets associés en les associant (l'asso-
+   * ciation peut avoir lui après aussi, quand on envoie un proprié
+   * qui peut avoir déjà des objets associés).
+   * Le problème, c'est qu'il semble que ça ne fonctionne pas bien
+   * par référence. Donc quand l'associé est associé à son proprié-
+   * taire, ça ne semble être fait que dans l'Associator.
+   * Pour palier ce problème, à la toute fin, quand on a fini de
+   * scanner tous les éléments, on passe en revue tous les objets
+   * en récupérant leur vraie valeur dans l'Associateur si ce sont
+   * des objets propriétaires. Et le tour est joué.
    */
   retrieveMeasures(): MEIMesureType[] {
-    console.log("this.measureData", this.measuresData);
+    // console.log("this.measureData", this.measuresDat);
     const mesures = []; // on le mettra peut-être en 'this.mesures'
     this.measuresData['section'].forEach((dmesure, iMeasure: number) => {
       // Si ce n'est pas une mesure, on passe à la suivante
@@ -198,7 +244,7 @@ export class ScorePageParser implements ScoreType {
       // On peut analyser cette mesure
       const measure = dmesure.measure;
       measure.forEach((content: {[x: string]: any}) => {
-        console.log("[Measure #%i", iMeasure, content);
+        // console.log("[Measure #%i", iMeasure, content);
         const tagName = Object.keys(content)[0];
         const attrs = content[':@'];
         const id: string = attrs['@_xml:id'];
@@ -223,7 +269,9 @@ export class ScorePageParser implements ScoreType {
             mesure.assets.push({type: 'slur', attrs: params});
             break;
           case 'arpeg': // un arpège
-            Object.assign(params, {plist: attrs['@_plist']});
+            const ownerId = attrs['@_plist'];
+            const obj = {type: 'arpeg', ownerId: ownerId, attrs: params};
+            Associator.addAssociatedObject(obj as undefined as AnyAssociatedObjet);
             mesure.assets.push({type: 'arpeg', attrs: params});
             break;
           case 'mordent': // Les mordants
@@ -283,13 +331,18 @@ export class ScorePageParser implements ScoreType {
     return staff.map(layerObj => {
       const layer = layerObj['layer'];
       const layerAttrs = layerObj[':@'];
-      console.log("Layer", layer);
-      console.log("Attributs layer", layerAttrs);
+      // console.log("Layer", layer);
+      // console.log("Attributs layer", layerAttrs);
       const attrs = {
         num: layerAttrs['@_n'],
         id: layerAttrs['@_xml:id']
       }
       return layer.map((itemObj: {[x: string]: any}) => {
+        // On utilise maintenant exclusivement la méthode traitant
+        // les objets quelconques
+        return this.retrieveMEIObjetFrom(itemObj);
+
+
         const tagName = Object.keys(itemObj)[0];
         if ( tagName === 'note') {
           return this.retrieveNoteFromMEIItem(itemObj);
@@ -325,6 +378,80 @@ export class ScorePageParser implements ScoreType {
       })
       // Chaque layer définit une voices dans la portée
     })
+  }
+
+
+  /**
+   * Cette méthode est pensée pour traiter n'importe quel type
+   * d'objet du fichier MEI/XML, à commencer par les notes.
+   * 
+   * Normalement, tout type d'objet, que ce soit les articulations
+   * ou les accords, en passant par les arpèges, doit passer par
+   * cette fonction pour être traité.
+   * 
+   * @return l'objet parsé dans un format plus simple/JS
+   * 
+   * @param itemObj Item quelconque du fichier MEI, parsé
+   */
+  retrieveMEIObjetFrom(itemObj: {[x: string]: any}) {
+    const tagName = Object.keys(itemObj)[0];
+    const attrs = itemObj[':@'];
+    const objet = {
+      type: tagName, // par exemple 'note' ou 'artic'
+      id: attrs['@_xml:id'],
+    }
+    // On ne met ensuite que les attributs présents (pour pouvoir
+    // faire plus facilement des tests de type)
+    let val: string | number | boolean;
+    const meiKey2Key: {[x: string]: string} = {
+      'pname': 'note',
+      'oct': 'octave',
+      'dur': 'duree',
+      'accid.ges': 'alteration',
+      'dur.ppq': 'ppq',
+      'place': 'place',
+      'artic': 'articulation',
+      'ploc': 'pitch', // position de silence
+      'oloc': 'octave', // idem
+      'shape': 'key', // Clé pour changement de clé
+      'line': 'line', // idem
+    };
+    for (var meiProp in meiKey2Key) {
+      const prop = meiKey2Key[meiProp];
+      (val = attrs[`@_${meiProp}`]) && Object.assign(objet, {[prop]: val});
+    }
+
+    // Traitement spécial de certains cas
+    switch(tagName) {
+
+      case 'chord':
+        const chord = itemObj['chord'];
+        const [notes, objets] = [[], []];
+        chord.forEach((chordObj: any) => {
+          const obj = this.retrieveMEIObjetFrom(chordObj);
+          obj.type == 'note' ? notes.push(obj) : objets.push(obj);
+        });
+        // Si des objets "extérieurs" sont attachés à l'accord (typiquement : un arpège),
+        // on l'ajoute. Et de toutes façons on l'enregistre comme objet propriétaire
+        Associator.addAssociable(objet as undefined as AnyAssociableObjet);
+
+        Object.assign(objet, { notes: notes, objets: objets }); 
+        break;
+
+
+      case 'clef':
+        if ( attrs['@_sameas']) {
+          Object.assign(objet, { ownerId: attrs['@_sameas'] });
+          Associator.addAssociatedObject(objet as undefined as AnyAssociatedObjet);
+        } else {
+          // Sinon, ça peut être un propriétaire
+          Associator.addAssociable(objet as undefined as AnyAssociableObjet);
+        }
+        break;
+      default: 
+        // Tous les autres passent par ici
+    }
+    return objet;
   }
 
   /**
@@ -409,9 +536,9 @@ export class ScorePageParser implements ScoreType {
 
   searchXML(path: string){
     let currentObject = this.scoreDefData;
-    console.log("path", path);
+    // console.log("path", path);
     path.split('.').forEach(name => {
-      console.log("currentObjet / name", currentObject, name);
+      // console.log("currentObjet / name", currentObject, name);
       currentObject = currentObject[name];
     })
     return currentObject;

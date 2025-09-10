@@ -21,9 +21,14 @@ export interface MEIAttributes {
   plist?: string;
 }
 
+export interface MEIPorteeType {
+  voices: any[];
+  attrs: any;
+}
+
 export interface MEIMesureType {
   numero: number;
-  portees: {voices: any, attrs: any}[];
+  portees: MEIPorteeType[];
   assets: {type: 'tie' | 'slur' | 'arpeg' | 'mordent', attrs: MEIAttributes}[];
 }
 
