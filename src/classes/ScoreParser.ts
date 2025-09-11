@@ -96,9 +96,9 @@ export class ScorePageParser implements ScoreType {
    */
   treate() {
     this.parse();
-    this.retrieveMetadata();
+    this.scanMetadata();
     this.parseStaffsData();
-    this.measures = this.retrieveMeasures(); // récupération des notes et des mesures
+    this.measures = this.scanMeasures(); // récupération des notes et des mesures
     this.retreivePlainOwnerInAssociator();
   }
 
@@ -224,7 +224,7 @@ export class ScorePageParser implements ScoreType {
    * en récupérant leur vraie valeur dans l'Associateur si ce sont
    * des objets propriétaires. Et le tour est joué.
    */
-  retrieveMeasures(): MEIMesureType[] {
+  scanMeasures(): MEIMesureType[] {
     // console.log("this.measureData", this.measuresDat);
     const mesures = []; // on le mettra peut-être en 'this.mesures'
     this.measuresData['section'].forEach((dmesure, iMeasure: number) => {
@@ -259,7 +259,7 @@ export class ScorePageParser implements ScoreType {
 
         switch(tagName) {
           case 'staff': // une portée, ses notes
-            const voices = this.retrieveLayersInStaff(content['staff']);
+            const voices = this.scanLayersInStaff(content['staff']);
             mesure.portees.push({voices: voices, attrs: params});
             break;
           case 'tie': // une hampe ? une liaison ?
@@ -303,7 +303,7 @@ export class ScorePageParser implements ScoreType {
    * 
    * @param staff Liste des layer(s) pour la portée
    */
-  retrieveLayersInStaff(staff: any[]): any[] {
+  scanLayersInStaff(staff: any[]): any[] {
     // staff.layer
     //    Une voices sur la portée. Plusieurs layers s'il y a plusieurs
     //    voices. Note : un layer, logiquement, remplit toute la mesure.
@@ -340,12 +340,12 @@ export class ScorePageParser implements ScoreType {
       return layer.map((itemObj: {[x: string]: any}) => {
         // On utilise maintenant exclusivement la méthode traitant
         // les objets quelconques
-        return this.retrieveMEIObjetFrom(itemObj);
+        return this.scanMEIObjetFrom(itemObj);
 
 
         const tagName = Object.keys(itemObj)[0];
         if ( tagName === 'note') {
-          return this.retrieveNoteFromMEIItem(itemObj);
+          return this.scanNoteFromMEIItem(itemObj);
         }
         const attrs = itemObj[':@']
         // On met déjà les attributs qui peuvent être partagés par
@@ -363,7 +363,7 @@ export class ScorePageParser implements ScoreType {
           case 'chord': // un accord (= liste de notes)
             // On lui ajoute les notes
             Object.assign(objet, {
-              notes: itemObj['chord'].map(this.retrieveNoteFromMEIItem.bind(this))
+              notes: itemObj['chord'].map(this.scanNoteFromMEIItem.bind(this))
             });
             break;
           case 'space': // une espace ?…
@@ -393,7 +393,7 @@ export class ScorePageParser implements ScoreType {
    * 
    * @param itemObj Item quelconque du fichier MEI, parsé
    */
-  retrieveMEIObjetFrom(itemObj: {[x: string]: any}) {
+  scanMEIObjetFrom(itemObj: {[x: string]: any}) {
     const tagName = Object.keys(itemObj)[0];
     const attrs = itemObj[':@'];
     const objet = {
@@ -428,7 +428,7 @@ export class ScorePageParser implements ScoreType {
         const chord = itemObj['chord'];
         const [notes, objets] = [[], []];
         chord.forEach((chordObj: any) => {
-          const obj = this.retrieveMEIObjetFrom(chordObj);
+          const obj = this.scanMEIObjetFrom(chordObj);
           obj.type == 'note' ? notes.push(obj) : objets.push(obj);
         });
         // Si des objets "extérieurs" sont attachés à l'accord (typiquement : un arpège),
@@ -460,7 +460,7 @@ export class ScorePageParser implements ScoreType {
    * Parce que son traitement est utile pour les notes seules et pour
    * les accords.
    */
-  retrieveNoteFromMEIItem(itemObj: {[x: string]: any}){
+  scanNoteFromMEIItem(itemObj: {[x: string]: any}){
     const attrs = itemObj[':@'];
     const objet = {
       type: 'note',
@@ -503,7 +503,7 @@ export class ScorePageParser implements ScoreType {
   /**
    * Relève les données générales du score
    */
-  retrieveMetadata(){
+  scanMetadata(){
     const staffsGroup = this.staffsGroup;
     this.metadata = {
       label: staffsGroup.label['#text'],

@@ -9,7 +9,7 @@ const path = "./assets/xml/preludeEbm.mei";
 }
 test("On peut récupérer les méta-données d'une page de partition", () => {
   const score = getScore();
-  score.retrieveMetadata();
+  score.scanMetadata();
   // --- Vérifications ---
   const meta = score.metadata;
   expect(meta.label).toEqual('Piano');
@@ -32,7 +32,7 @@ test.only("Essaie de totale récupération", () => {
 });
 test("Le parseur peut récupérer les données note d'un fichier MEI (fichier de partition)", () => {
   const score = getScore();
-  const mesures = score.retrieveMeasures();
+  const mesures = score.scanMeasures();
   // console.log("Mesures :", mesures);
   // --- Vérification ---
   // Il doit y avoir 14 mesures
