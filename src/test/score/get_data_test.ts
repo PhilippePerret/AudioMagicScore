@@ -1,6 +1,27 @@
 import { test, expect } from "bun:test";
 import { ScorePageParser } from "../../classes/ScoreParser";
+import { MEIAnyObjet } from "../../classes/Objet";
 
+/**
+ * Pour vérifier qu'une note est bien celle qu'on croit.
+ * 
+ *  expectNote(<note MEI>, [pitch, altération, octave, durée])
+ */
+type SimplifiedNote = [
+  pitch: string, alter: string, octave: number, duree: number
+];
+function expectNote(
+  note: MEIAnyObjet, 
+  [pitch, alter, octave, duree]: SimplifiedNote
+){
+  expect(note.type).toBe('note');
+  expect(note.note).toBe(pitch);
+  expect(note.alteration).toBe(alter);
+  expect(note.duree).toBe(duree);
+  expect(note.octave).toBe(octave);
+}
+
+// Renvoie une instance ScorePageParser
 function getScore(){
 const path = "./assets/xml/preludeEbm.mei";
   const score = new ScorePageParser(path);
@@ -26,7 +47,7 @@ test("On peut récupérer les méta-données d'une page de partition", () => {
   expect(staff2.metrique).toEqual([3, 2]);
   // console.log("staffs", staffs);
 })
-test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichier de partition)", () => {
+test("Le parseur peut récupérer les données note d'un fichier MEI (fichier de partition)", () => {
   const score = getScore();
   const mesures = score.scanMeasures();
   // console.log("Mesures :", mesures);
@@ -54,10 +75,12 @@ test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichi
     }
   }
   // On vérifie quelques mesures en particulier
+  type AO = MEIAnyObjet[];
   let mes: any, md: any, mg: any;
-  let v1_md: any[], v2_md: any[];
+  let v1_md: AO, v2_md: AO, v1_mg: AO, v2_mg: AO;
   let n1: any, n2: any, n3: any;
-
+  let a1: MEIAnyObjet, a2: MEIAnyObjet, a3: MEIAnyObjet; // pour les accord, p.e.
+  
   // La mesure 6 pour les différentes voices
   mes = mesures[5];
   // console.log("Mesure 6 : ", mes);
@@ -72,18 +95,12 @@ test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichi
   // 5 en blanche
   v1_md = md.voices[0];
   // Les trois notes sont identiques
-  for (n1 of v1_md) {
-    expect(n1.type).toBe('note');
-    expect(n1.note).toBe('e');
-    expect(n1.octave).toBe(5);
-    expect(n1.duree).toBe(2);
-    expect(n1.alteration).toBe('f');
-  }
+  for (n1 of v1_md) { expectNote(n1, ['e', 'f', 5, 2]); }
   // La deuxième voix contient trois accords presque identiques.
   // Ils contiennent les trois les notes solb dob en arpège et le
   // premier contient en plus la note mib
   v2_md = md.voices[1];
-  console.log("Deuxième voix de la main droite : ", v2_md); 
+  // console.log("Deuxième voix de la main droite : ", v2_md); 
   for (n1 of v2_md) {
     expect(n1).toContainAllKeys(['type', 'id', 'duree', 'ppq', 'notes', 'objets']);
     expect(n1.type).toBe('chord');
@@ -95,15 +112,50 @@ test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichi
       expect(n2.duree).toBeUndefined();
       expect(n2.ppq).toBeUndefined();
     }
-    console.log("Objets de l'accord", n1.objets); // doit contenir l'arpège
-
   }
   // Dans l'accord (ou la mesure), on doit aussi trouver l'arpègiation
   // TODO
 
-  // La mesure 8 pour les ornements et le changement de clé
-  const mhuit = mesures[8];
+  // La mesure 8 pour les ornements, le beam et le changement de clé
+  mes = mesures[7];
   md = mes.portees[0];
   mg = mes.portees[1]; 
- 
+
+  // Première voix de la MD
+  v1_md = md.voices[0];
+  // console.log("voix 1 MD", v1_md);
+  // Les premières notes doivent être "dé-beamées"
+  expectNote(v1_md[0], ['c', 'f', 5, 4]);
+  expect(v1_md[0].points).toBe(1)
+  expectNote(v1_md[1], ['b', 'f', 4, 16]);
+  expectNote(v1_md[2], ['a', 'f', 4, 16]);
+  
+  v1_mg = mg.voices[0];
+  console.log("Voix 1 de main gauche", v1_mg);
+
+  // Le premier accord a un objet associé
+  a1 = v1_mg[0];
+  expect(a1.objets.length).toBe(1);
+  expect(a1.objets[0].type).toBe('arpeg')
+
+  // Le deuxième objet doit être un changement de clé
+  // (non, bizarrement, c'est le troisième, le changement de clé est
+  //  inséré entre le premier silence et le deuxième)
+  a2 = v1_mg[2];
+  console.log("Deuxime objet", a2);
+  expect(a2.type).toBe('clef');
+  expect(a2.key).toBe('G');
+  expect(a2.line).toBe(2);
+
+  // Le (vrai) deuxième objet est un silence, comme le quatrième
+  a2 = v1_mg[1];
+  a3 = v1_mg[3];
+  for( var r of [a2, a3]){
+    expect(r.type).toBe('rest');
+    expect(r.pitch).toBe('d');
+    expect(r.octave).toBe(3);
+  }
+  expect(a2.duree).toBe(4);
+  expect(a3.duree).toBe(8);
+
 });
