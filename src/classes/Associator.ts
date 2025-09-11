@@ -43,9 +43,6 @@ export class Associator {
    * @param objet Un propriétaire
    */
   public static addOwner(owner: AnyOwnerObjet) {
-    console.log("AJOUT OBJET ASSOCIABLE:", owner);
-    // Quoi qu'il en soit, on enregistre toujours un objet
-    // owner
     this.addInTableowners(owner);
     // S'il a déjà des objets associés enregistrés, on lui donne
     if ( this.hasAssociatedObjets(owner.id)) {
@@ -68,11 +65,9 @@ export class Associator {
    * @param objet Objet qu'on peut associer à un propriétaire
    */
   public static addAssociatedObject(objet: AnyAssociatedObjet) {
-    console.log("AJOUT OBJET ASSOCIÉ", objet);
     if ( this.isKnownOwner(objet.ownerId)) {
-      console.log("On peut déjà l'associer à son propriétaire");
       this.getOwner(objet.ownerId).objets.push(objet); // J'ai l'impression que ça ne fonctionne pas par référence…
-      // On indique qu'il a été associé
+      // On indique que le propriétaire a reçu des associés
       this._ownersWithAssociateds.set(objet.ownerId, true);
     } else {
       // Sinon il faut le mémoriser pour l'associer plus tard
