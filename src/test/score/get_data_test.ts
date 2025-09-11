@@ -26,11 +26,7 @@ test("On peut récupérer les méta-données d'une page de partition", () => {
   expect(staff2.metrique).toEqual([3, 2]);
   // console.log("staffs", staffs);
 })
-test.only("Essaie de totale récupération", () => {
-  const score = getScore();
-  score.treate();
-});
-test("Le parseur peut récupérer les données note d'un fichier MEI (fichier de partition)", () => {
+test.only("Le parseur peut récupérer les données note d'un fichier MEI (fichier de partition)", () => {
   const score = getScore();
   const mesures = score.scanMeasures();
   // console.log("Mesures :", mesures);
@@ -87,7 +83,7 @@ test("Le parseur peut récupérer les données note d'un fichier MEI (fichier de
   // Ils contiennent les trois les notes solb dob en arpège et le
   // premier contient en plus la note mib
   v2_md = md.voices[1];
-  // console.log("Deuxième voix de la main droite : ", v2_md); 
+  console.log("Deuxième voix de la main droite : ", v2_md); 
   for (n1 of v2_md) {
     expect(n1).toContainAllKeys(['type', 'id', 'duree', 'ppq', 'notes', 'objets']);
     expect(n1.type).toBe('chord');

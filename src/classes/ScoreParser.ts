@@ -30,12 +30,11 @@ const FastXmlOrderedParserOptions = {
   allowBooleanAttributes: true
 }
 
-import { MeasureType, MEIAttributes, MEIMesureType, MEIPorteeType } from "./Measure";
+import { MEIAttributes, MEIMesureType } from "./Measure";
 import { Piece } from "./Piece";
 import { throwError } from "../utils/message";
-import { ALTER_STR_TO_ALTER_NB } from "../utils/music_constants";
-import { Note } from "./Note";
-import { AnyAssociableObjet, AnyAssociatedObjet, Associator } from "./Associator";
+import { ALTER_STR_TO_ALTER_NB, MEI_ATTRS_TO_KEYS } from "../utils/music_constants";
+import { AnyOwnerObjet, AnyAssociatedObjet, Associator } from "./Associator";
 import { MEIAnyObjet } from "./Objet";
 
 type CleType = 'G' | 'F' | 'C' ; // clé de la portée
@@ -70,7 +69,6 @@ const xmlPaths = {
   clef: {in: 'staff', tag: 'clef'},
   armure: {in: 'staff', tag: 'keySig'},
   metrique: {in: 'staff', tag: 'meterSig'} 
-
 }
 
 /**
@@ -85,6 +83,9 @@ export class ScorePageParser implements ScoreType {
   metadata: ScoreMetadataType;
   scoreDefData: JSON;
   measuresData: JSON;
+  // La donnée vraiment intéressante, celle qui va contenir tous les
+  // objets, à commencer par les notes et les silences.
+  // Path: measures.portees.voices
   measures: MEIMesureType[];
 
   constructor(
@@ -99,28 +100,7 @@ export class ScorePageParser implements ScoreType {
     this.scanMetadata();
     this.parseStaffsData();
     this.measures = this.scanMeasures(); // récupération des notes et des mesures
-    this.retreivePlainOwnerInAssociator();
-  }
-
-  /**
-   * Récupération des propriétaires avec leurs associés
-   */
-  retreivePlainOwnerInAssociator(){
-    let owner: AnyAssociableObjet;
-
-    this.measures.forEach((mesure: MEIMesureType) => {
-      mesure.portees.forEach((portee: MEIPorteeType) => {
-        portee.voices.forEach((voice: any /* todo: à mieux définir */)=> {
-          // On passe en revue chaque objet de la voix, note, silence,
-          // accord
-          voice.forEach((objet: MEIAnyObjet) => {
-            if ( (owner = Associator.getIfAssociabilized(objet.id))){
-              console.log("OWNER ASSOCIÉ (et objet présent)", owner, objet);
-            }
-          });
-        });
-      });
-    });
+    // this.retreivePlainOwnerInAssociator();
   }
 
   /**
@@ -140,14 +120,13 @@ export class ScorePageParser implements ScoreType {
     this.parseXMLMeasures(xmlCode);
  }
 
-    /**
+  /**
    * On parse le bloc XML de définition du score
    * 
    * @param xml Bloc de code total
    */
   parseXMLScoreDef(xml: string): void {
     const blocScoreDef = this.readRawCode(xml, 'scoreDef');
-    // console.log("bloc scoredef", blocScoreDef);
     this.scoreDefData = (new XMLParser(FastXmlParserOptions)).parse(blocScoreDef);
   }
 
@@ -162,18 +141,25 @@ export class ScorePageParser implements ScoreType {
     this.measuresData = this.measuresData[0];
   }
   
-  readRawCode(xml: string, tagname: string){
+  /**
+   * Relève le code brut dans une balise (un nœud) du fichier xml
+   * complet.
+   * 
+   * @param xml Tout le code
+   * @param tagname La balise recherchée
+   * @returns Tout le code dans la base, brut.
+   */
+  private readRawCode(xml: string, tagname: string){
     const strIn = xml.indexOf('<' + tagname + ' ');
     const tagFin = '</' + tagname + '>';
     const strOut = xml.indexOf(tagFin) + tagFin.length;
     return xml.substring(strIn, strOut);
   }
 
-  private _staffsgrps;
+  private _staffsgrps: JSON;
   private get staffsGroup() {
     return this._staffsgrps || (this._staffsgrps = this.searchXML(xmlPaths.staffs));
   }
-
 
   /**
    * RELÈVE et DISPATCH DES NOTES
@@ -227,8 +213,7 @@ export class ScorePageParser implements ScoreType {
   scanMeasures(): MEIMesureType[] {
     // console.log("this.measureData", this.measuresDat);
     const mesures = []; // on le mettra peut-être en 'this.mesures'
-    this.measuresData['section'].forEach((dmesure, iMeasure: number) => {
-      // Si ce n'est pas une mesure, on passe à la suivante
+    this.measuresData['section'].forEach((dmesure: {measure: any}, iMeasure: number) => { // Si ce n'est pas une mesure, on passe à la suivante
       if (!dmesure.measure) { 
         console.log("Pas une mesure :", dmesure);
         return; 
@@ -337,47 +322,23 @@ export class ScorePageParser implements ScoreType {
         num: layerAttrs['@_n'],
         id: layerAttrs['@_xml:id']
       }
-      return layer.map((itemObj: {[x: string]: any}) => {
-        // On utilise maintenant exclusivement la méthode traitant
-        // les objets quelconques
-        return this.scanMEIObjetFrom(itemObj);
-
-
-        const tagName = Object.keys(itemObj)[0];
-        if ( tagName === 'note') {
-          return this.scanNoteFromMEIItem(itemObj);
+      const layerObjets: MEIAnyObjet[] = [];
+      layer.forEach((itemObj: MEIAnyObjet) => {
+        const scannedObjet = this.scanMEIObjetFrom(itemObj);
+        if (scannedObjet.type === 'beam'){
+          // L'objet 'beam', dans un fichier MEI, est juste un objet
+          // rassemblant plusieurs notes attachées. On n'en a pas
+          // besoin.
+          layerObjets.push(...scannedObjet.notes);
+          if (scannedObjet.objets.length) {
+            console.log("Objets du beam perdus", scannedObjet.objets);
+          }
+        } else {
+          layerObjets.push(scannedObjet);
         }
-        const attrs = itemObj[':@']
-        // On met déjà les attributs qui peuvent être partagés par
-        // plusieurs type d'item
-        const objet = {
-          type: tagName,
-          id: attrs['@_xml:id'],
-          duree: attrs['@_dur'],
-          ppq: attrs['@_dur.ppq'], 
-        }
-        switch(tagName) {
-          case 'note': // une note, l'élément de base
-            // Traitée plus haut, en particulier
-           break;
-          case 'chord': // un accord (= liste de notes)
-            // On lui ajoute les notes
-            Object.assign(objet, {
-              notes: itemObj['chord'].map(this.scanNoteFromMEIItem.bind(this))
-            });
-            break;
-          case 'space': // une espace ?…
-            // @_dur pour durée 
-            // PAS DE CONTENU
-            console.warn("Je dois voir à quoi correspond un item 'space'");
-            break;
-          default:
-            console.warn("Je dois apprendre à traiter les items '%s'", tagName);
-        }
-        return objet; // pour ajouter la note (ou autre) au layer (à la voices)
-      })
-      // Chaque layer définit une voices dans la portée
-    })
+      });
+      return layerObjets;
+    });
   }
 
 
@@ -393,7 +354,7 @@ export class ScorePageParser implements ScoreType {
    * 
    * @param itemObj Item quelconque du fichier MEI, parsé
    */
-  scanMEIObjetFrom(itemObj: {[x: string]: any}) {
+  scanMEIObjetFrom(itemObj: MEIAnyObjet): MEIAnyObjet {
     const tagName = Object.keys(itemObj)[0];
     const attrs = itemObj[':@'];
     const objet = {
@@ -403,41 +364,45 @@ export class ScorePageParser implements ScoreType {
     // On ne met ensuite que les attributs présents (pour pouvoir
     // faire plus facilement des tests de type)
     let val: string | number | boolean;
-    const meiKey2Key: {[x: string]: string} = {
-      'pname': 'note',
-      'oct': 'octave',
-      'dur': 'duree',
-      'accid.ges': 'alteration',
-      'dur.ppq': 'ppq',
-      'place': 'place',
-      'artic': 'articulation',
-      'ploc': 'pitch', // position de silence
-      'oloc': 'octave', // idem
-      'shape': 'key', // Clé pour changement de clé
-      'line': 'line', // idem
-    };
-    for (var meiProp in meiKey2Key) {
-      const prop = meiKey2Key[meiProp];
+    for (var meiProp in MEI_ATTRS_TO_KEYS) {
+      const prop: string = MEI_ATTRS_TO_KEYS[meiProp];
       (val = attrs[`@_${meiProp}`]) && Object.assign(objet, {[prop]: val});
     }
 
+    let notes: MEIAnyObjet[] = []; 
+    let objets: MEIAnyObjet[] = [];
+    let obj: MEIAnyObjet;
+
     // Traitement spécial de certains cas
     switch(tagName) {
-
+      
+      // --- Les ACCORDS ---
       case 'chord':
         const chord = itemObj['chord'];
-        const [notes, objets] = [[], []];
+        [notes, objets] = [[], []];
         chord.forEach((chordObj: any) => {
-          const obj = this.scanMEIObjetFrom(chordObj);
+          obj = this.scanMEIObjetFrom(chordObj);
           obj.type == 'note' ? notes.push(obj) : objets.push(obj);
         });
         // Si des objets "extérieurs" sont attachés à l'accord (typiquement : un arpège),
         // on l'ajoute. Et de toutes façons on l'enregistre comme objet propriétaire
-        Associator.addAssociable(objet as undefined as AnyAssociableObjet);
+        Associator.addOwner(objet as undefined as AnyOwnerObjet);
 
         Object.assign(objet, { notes: notes, objets: objets }); 
         break;
 
+      // --- Les NOTES ATTACHÉES ---
+      case 'beam':
+        const beam = itemObj['beam'];
+        [notes, objets] = [[], []];
+        beam.forEach((beamObj: MEIAnyObjet) => {
+          obj = this.scanMEIObjetFrom(beamObj);
+          obj.type == 'note' ? notes.push(obj) : objets.push(obj);
+        });
+        // Plus tard, les notes seront mises dans le flux normal
+        // (on laisse lilypond gérer ça seul)
+        Object.assign(objet, { notes: notes, objets: objets });
+        break;
 
       case 'clef':
         if ( attrs['@_sameas']) {
@@ -445,13 +410,12 @@ export class ScorePageParser implements ScoreType {
           Associator.addAssociatedObject(objet as undefined as AnyAssociatedObjet);
         } else {
           // Sinon, ça peut être un propriétaire
-          Associator.addAssociable(objet as undefined as AnyAssociableObjet);
+          Associator.addOwner(objet as undefined as AnyOwnerObjet);
         }
         break;
-      default: 
-        // Tous les autres passent par ici
     }
-    return objet;
+
+    return objet as MEIAnyObjet;
   }
 
   /**
@@ -460,7 +424,7 @@ export class ScorePageParser implements ScoreType {
    * Parce que son traitement est utile pour les notes seules et pour
    * les accords.
    */
-  scanNoteFromMEIItem(itemObj: {[x: string]: any}){
+  scanNoteFromMEIItem(itemObj: MEIAnyObjet){
     const attrs = itemObj[':@'];
     const objet = {
       type: 'note',
@@ -506,7 +470,7 @@ export class ScorePageParser implements ScoreType {
   scanMetadata(){
     const staffsGroup = this.staffsGroup;
     this.metadata = {
-      label: staffsGroup.label['#text'],
+      label: staffsGroup['label']['#text'],
       staffs: this.parseStaffsData()
     };
   }
