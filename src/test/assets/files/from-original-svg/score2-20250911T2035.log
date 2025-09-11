@@ -1,0 +1,117 @@
+2025-09-11 20:35:11,421 ERROR [score2]              IOUtils.java:278  | Unmapping is not supported.
+java.lang.reflect.InaccessibleObjectException: Unable to make public jdk.internal.ref.Cleaner java.nio.DirectByteBuffer.cleaner() accessible: module java.base does not "opens java.nio" to unnamed module @662ac478
+	at java.base/java.lang.reflect.AccessibleObject.throwInaccessibleObjectException(Unknown Source)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(Unknown Source)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(Unknown Source)
+	at java.base/java.lang.reflect.Method.checkCanSetAccessible(Unknown Source)
+	at java.base/java.lang.reflect.Method.setAccessible(Unknown Source)
+	at org.apache.pdfbox.io.IOUtils.unmapper(IOUtils.java:244)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at org.apache.pdfbox.io.IOUtils.<clinit>(IOUtils.java:69)
+	at org.apache.pdfbox.Loader.loadPDF(Loader.java:378)
+	at org.audiveris.omr.image.ImageLoading.getPdfLoader(ImageLoading.java:159)
+	at org.audiveris.omr.image.ImageLoading.getLoader(ImageLoading.java:209)
+	at org.audiveris.omr.sheet.Book.createStubs(Book.java:557)
+	at org.audiveris.omr.CLI$ProcessingTask.processBook(CLI.java:830)
+	at org.audiveris.omr.CLI$CliTask.call(CLI.java:504)
+	at org.audiveris.omr.Main.runBatchTasks(Main.java:371)
+	at org.audiveris.omr.Main.main(Main.java:260)
+	at Audiveris.main(Audiveris.java:50)
+2025-09-11 20:35:11,450 INFO [score2]                 Book.java:562  | 1 sheet in /Users/philippeperret/Programmes/ScoreSuite/AudioMagicScore/src/test/assets/files/from-original-svg/score2.pdf
+2025-09-11 20:35:11,512 INFO []                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:11,513 INFO []                 Book.java:2491 | Book stored as /Users/philippeperret/Programmes/ScoreSuite/AudioMagicScore/src/test/assets/files/from-original-svg/score2.omr
+2025-09-11 20:35:11,514 INFO []                 Book.java:1933 | Book reaching PAGE on sheets:[#1]
+2025-09-11 20:35:11,515 INFO [score2]       StepMonitoring.java:98   | LOAD
+2025-09-11 20:35:11,560 INFO [score2]            SheetStub.java:1268 | Loaded image #1 1658x308 from /Users/philippeperret/Programmes/ScoreSuite/AudioMagicScore/src/test/assets/files/from-original-svg/score2.pdf
+2025-09-11 20:35:11,563 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:11,585 INFO [score2]           DataHolder.java:348  | Stored /sheet#1/GRAY.png
+2025-09-11 20:35:11,672 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:11,673 INFO [score2]       StepMonitoring.java:98   | BINARY
+2025-09-11 20:35:11,719 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:11,719 INFO [score2]           DataHolder.java:256  | Removed /sheet#1/GRAY.png
+2025-09-11 20:35:11,725 INFO [score2]           DataHolder.java:348  | Stored /sheet#1/BINARY.png
+2025-09-11 20:35:11,726 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:11,727 INFO [score2]       StepMonitoring.java:98   | SCALE
+2025-09-11 20:35:11,732 INFO [score2]         ScaleBuilder.java:241  | Beam  guessed height: 10 -- 0.50 of 21 interline
+2025-09-11 20:35:11,733 INFO [score2]         ScaleBuilder.java:264  | Beam measured height: 10 -- 0.27 of [6..21] range at 101% of needed quorum
+2025-09-11 20:35:11,733 INFO [score2]            ScaleStep.java:65   | Scale{ interline(20,21,21) line(2,2,2) beam(10)}
+2025-09-11 20:35:11,734 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:11,735 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:11,736 INFO [score2]       StepMonitoring.java:98   | GRID
+2025-09-11 20:35:11,796 INFO [score2]       LinesRetriever.java:1500 | Global slope: 0.00000
+2025-09-11 20:35:11,802 INFO [score2]    ClustersRetriever.java:328  | Retrieved raw line clusters: 2 of sizes [5] with interline(20,21,21)
+2025-09-11 20:35:11,818 INFO [score2]            PeakGraph.java:310  | Systems: #1[1, 2]
+2025-09-11 20:35:11,850 INFO [score2]        SystemManager.java:779  | 1 part along 1 system
+2025-09-11 20:35:11,851 INFO [score2]                 Book.java:545  | Created scores: [{Score 1}]
+2025-09-11 20:35:11,852 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:11,868 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:11,869 INFO [score2]       StepMonitoring.java:98   | HEADERS
+2025-09-11 20:35:11,992 INFO [score2]      BasicClassifier.java:277  | Classifier loaded XML norms.
+2025-09-11 20:35:11,993 INFO [score2]   AbstractClassifier.java:396  | Classifier data loaded from default uri jar:file:/Applications/Audiveris.app/Contents/app/audiveris.jar!/res/basic-classifier.zip
+2025-09-11 20:35:12,313 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:12,341 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:12,342 INFO [score2]       StepMonitoring.java:98   | STEM_SEEDS
+2025-09-11 20:35:12,346 INFO [score2]        StemSeedsStep.java:86   | stem(3 max:4)
+2025-09-11 20:35:12,356 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:12,378 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:12,379 INFO [score2]       StepMonitoring.java:98   | BEAMS
+2025-09-11 20:35:12,601 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:12,606 INFO [score2]           DataHolder.java:348  | Stored /sheet#1/HEAD_SPOTS.png
+2025-09-11 20:35:12,651 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:12,653 INFO [score2]       StepMonitoring.java:98   | LEDGERS
+2025-09-11 20:35:12,674 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:12,719 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:12,720 INFO [score2]       StepMonitoring.java:98   | HEADS
+2025-09-11 20:35:13,391 INFO [score2]        HeadSeedTally.java:235  | Scale information: HeadSeeds{NOTEHEAD_BLACK[L:-0.2,R:-0.5]}
+2025-09-11 20:35:13,393 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:13,393 INFO [score2]           DataHolder.java:256  | Removed /sheet#1/HEAD_SPOTS.png
+2025-09-11 20:35:13,468 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:13,470 INFO [score2]       StepMonitoring.java:98   | STEMS
+2025-09-11 20:35:13,540 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:13,605 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:13,606 INFO [score2]       StepMonitoring.java:98   | REDUCTION
+2025-09-11 20:35:13,623 INFO [score2]        ReductionStep.java:105  | Stems free length median value: 73 pixels, 3.5 interlines
+2025-09-11 20:35:13,625 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:13,658 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:13,660 INFO [score2]       StepMonitoring.java:98   | CUE_BEAMS
+2025-09-11 20:35:13,660 INFO [score2]         CueBeamsStep.java:81   | Step CUE_BEAMS is skipped because small heads switch is off
+2025-09-11 20:35:13,661 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:13,694 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:13,695 INFO [score2]       StepMonitoring.java:98   | TEXTS
+2025-09-11 20:35:13,717 WARN [score2]         TesseractOCR.java:341  | Language 'eng' is not supported
+2025-09-11 20:35:13,718 INFO [score2]              OcrUtil.java:106  | Missing support for 'eng' language(s)
+2025-09-11 20:35:13,720 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:13,754 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:13,755 INFO [score2]       StepMonitoring.java:98   | MEASURES
+2025-09-11 20:35:13,757 INFO [score2]                 Page.java:307  | 4 raw measures: [4 in system#1]
+2025-09-11 20:35:13,758 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:13,794 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:13,795 INFO [score2]       StepMonitoring.java:98   | CHORDS
+2025-09-11 20:35:13,799 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:13,837 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:13,838 INFO [score2]       StepMonitoring.java:98   | CURVES
+2025-09-11 20:35:13,922 INFO [score2]         SlursBuilder.java:240  | Slurs: 0
+2025-09-11 20:35:13,924 INFO [score2]      SegmentsBuilder.java:155  | Segments: 1
+2025-09-11 20:35:13,926 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:13,967 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:13,968 INFO [score2]       StepMonitoring.java:98   | SYMBOLS
+2025-09-11 20:35:13,994 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:14,037 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:14,038 INFO [score2]       StepMonitoring.java:98   | LINKS
+2025-09-11 20:35:14,045 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:14,087 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:14,088 INFO [score2]       StepMonitoring.java:98   | RHYTHMS
+2025-09-11 20:35:14,099 INFO [score2]        MeasureRhythm.java:1045 | Measure{#4} No timeOffset for HeadChordInter#590{(0.948/0.948) slot#6 dur:1/4}
+2025-09-11 20:35:14,099 INFO [score2]          StackRhythm.java:224  | S1 MeasureStack#4 no correct rhythm
+2025-09-11 20:35:14,101 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:14,147 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:14,148 INFO [score2]       StepMonitoring.java:98   | PAGE
+2025-09-11 20:35:14,151 INFO [score2]                 Book.java:2531 | Stored /book.xml
+2025-09-11 20:35:14,196 INFO [score2]                Sheet.java:1562 | Stored /sheet#1/sheet#1.xml
+2025-09-11 20:35:14,197 INFO [score2]            SheetStub.java:1644 | Disposed sheet
+2025-09-11 20:35:14,225 INFO [score2]                 Book.java:2018 | End of Stub#1 memory: 32,006,752
+2025-09-11 20:35:14,225 INFO [score2]                 Book.java:2025 | Book processed.
+2025-09-11 20:35:14,264 INFO [score2]            SheetStub.java:995  | Loaded /sheet#1/sheet#1.xml
+2025-09-11 20:35:14,420 INFO [score2]      PartwiseBuilder.java:2661 | Exporting sheet(s): [#1]
+2025-09-11 20:35:14,439 INFO [score2]        ScoreExporter.java:164  | Score score2 exported to /Users/philippeperret/Programmes/ScoreSuite/AudioMagicScore/src/test/assets/files/from-original-svg/score2.mxl
+2025-09-11 20:35:14,458 INFO [score2]                Score.java:181  | Closing {Score 1}

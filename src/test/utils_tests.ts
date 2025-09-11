@@ -1,4 +1,17 @@
+import { existsSync, unlinkSync } from "fs";
 import { DUREE, Note, NoteType } from "../classes/Note"
+import { join } from "path";
+
+
+export function unlinkByIfExist(
+  folder: string,
+  names: string[]
+){
+  names.forEach(name => {
+    const path = join(folder, name);
+    if ( existsSync(path)) { unlinkSync(path); }
+  });
+}
 
 export const db_croche = DUREE.db_croche;
 export const croche = DUREE.croche;

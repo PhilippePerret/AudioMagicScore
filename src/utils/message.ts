@@ -5,6 +5,7 @@ const ERRORS = {
   // Soit une liste avec des clés et un object fourni (ou les deux)
   'test-message': 'Juste un test de message sans paramètres',
   'mei-file-unfound': ['Le fichier', 0, 'est introuvable.'],
+  'mei-files-not-built': 'Les fichiers MEI n’ont pas pu être construits',
   'unknown-file' : ['Unknown File:', 0],
   'assemble-empty-folder': ['Empty folder:', 0],
   'bad-extension': ['Bad extension (.mei required):', 0],
