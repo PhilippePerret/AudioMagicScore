@@ -1,8 +1,9 @@
 import { demiTonsBetween, intervalBetween } from "../utils/notes";
-import { ContextType, DUREE, DureeType, Note, NoteType, SimpleTune, Tune } from "./Note";
+import { ContextType, DUREE, DureeType, Note, NoteType, SimpleTune, Tune, TuneType } from "./Note";
 
 export class Chord {
   /**
+   * @api
    * Fonction qui reçoit des notes au hasard et les ordonne pour former un
    * accord analysable. Retourne les notes de l'accord (:chord) et les notes
    * étrangères qui ont été retirés
@@ -58,7 +59,15 @@ export class Chord {
           variantes = addVariante(variantes, bytierces[0], index);
           break;
         case 2: // <= first = septième, note = fond
-          bytierces.unshift(index, undefined, undefined); 
+          if (bytierces.length < 4) {
+            bytierces.unshift(index, undefined, undefined); 
+          } else if (bytierces.length === 4) {
+            bytierces.push(index);
+          } else if (bytierces[4] === undefined) {
+            bytierces[4] = index;
+          } else {
+           variantes = addVariante(variantes, bytierces[4], index); 
+          }
           break;
         case 3: 
           if ( bytierces.length >= 2 ) { 
@@ -90,16 +99,19 @@ export class Chord {
           if ( bytierces[3] === undefined) {
             bytierces[3] = index;
           } else {
+            // console.log("Variante avec la note d'index %i et bytierces = ", index, bytierces);
             variantes = addVariante(variantes, bytierces[3], index);
           }
           break;
         default:
           console.error("Valeur d'intervalle non traitée : %s", val);
-      } 
+      }
+      // console.log("bytierces dans boucle", bytierces); 
+      // console.log("variantes dans boucle", variantes);
     };
 
     /*
-    console.log("bytierces", bytierces);
+    console.log("bytierces FINALE", bytierces);
     console.log("variantes", variantes);
     //*/
 
@@ -307,6 +319,9 @@ export class Chord {
   private notes: NoteType[];
   private context: ContextType;
   public id: string;
+  public rankByDuree: number; // relatif au context, le rang, parmi plusieurs accords, en fonction de la durée de ses notes
+  public rankByOccurences: number; // relatif au context, le rang, parmi plusieurs accords, en fonction de l'occurrence de ses notes
+  public rankByFunction: number; // relatif au context, le rang, parmi plusieurs accords, en fonction de sa fonction harmonique
   private _weight: number;
   public get weight(){ return this._weight || ( this._weight = this.calcWeight())}
 
@@ -317,6 +332,68 @@ export class Chord {
   }
 
   /**
+   * @return le poids en durée de l'accord (somme de la durée de
+   * toutes ses notes)
+   * Note : ne pas confondre avec la fonction dureeRelWeigth qui 
+   * calcule le poids par rapport à un ensemble de notes données
+   */
+  get dureeAbsWeight(){
+    return this._dureeweight || (this._dureeweight = this.calcAbsDureeWeight())
+  }
+  private _dureeweight: number;
+  private calcAbsDureeWeight(): number{
+    return 0; // pour le moment
+  }
+
+  /**
+   * @return le poids relatif en durée de l'accord par rapport à une
+   * durée totale +dureeTotale+
+   */
+  dureeRelWeight(dureeTotale: number): number {
+    let poids = this.dureeAbsWeight / dureeTotale * 100;
+    return poids; 
+  }
+
+  /**
+   * @return le poids en nombre de notes de l'accord dans un ensemble
+   * de notes +notes+ fourni
+   */
+  nbNotesWeight(notes: NoteType[]): number {
+    let poids = 0; // pour le moment
+    return poids; 
+  }
+
+  /**
+   * @return le poids de l'accord en fonction de sa nature dans la
+   * tonalité fournie.
+   */
+  functionWeight(tune: TuneType): number {
+      let poids = 0; // pour le moment
+    return poids; 
+  }
+
+
+  /**
+   * Calcul le poids de l'accord en fonction de l'occurence des ses
+   * notes dans un contexte donné (pas ici : ici, on ne reçoit que
+   * la table des occurences qui définit, pour chaque note du contexte,
+   * son poids en occurence qui dépend de sa fréquence dans le contexte
+   * donné)
+   * o
+   * NOTE DEV : On pourrait généraliser cette méthode, qui pourrait 
+   * certainement fonctionner pour d'autres poids.
+   * 
+   * @param tableOccurences Table définissant le poids pour chaque note d'une liste (contenant aussi les notes de l'accord) en fonction de leur occurence dans une liste de notes données (qui a permis de construire la table — voir par exemple la fonction Analyzor.discrimineByOccurenceCount)
+   * @returns 
+   */
+  calcWeightOccurences(tableOccurences: Map<string, number>): number {
+    return this.notes.reduce(
+      (accum, note) => accum + tableOccurences.get(note.rnote), 0
+    )
+  }
+
+  /**
+   * @obsolete (première fonction)
    * Calcule le poids de l'accord
    * 
    * @returns Le poids de l'accord dans le contexte donné

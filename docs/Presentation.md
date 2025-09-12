@@ -8,3 +8,31 @@ L'application est formée de quatre parties distinctes mais fonctionnant ensembl
 * La **GRAVURE**, phase de travail après l'analyse et le scanning qui permet de graver la partition, c'est-à-dire de produire le fichier Score-image qui va permettre de produire la partition finale (compris aussi dans cette phase — `Gravor`).
 
   Avant de graver, on passe par une **FUSION** des données des notes et des données d'analyse pour pouvoir les injecter dans le code Score-image.
+
+score-image << 'NOTES'
+--piano
+--chiffrage
+--time 4/4
+--tune Eb
+
+-> essais-chiffrage
+c4\chifName "Cm" ees8 f aes g4
+c1\chifDeg "T"
+NOTES
+
+
+score-image << 'NOTES'
+--piano
+--chiffrage
+--time 4/4
+--tune Eb
+
+-> essais-chiffrage
+c4\chifName "Cm" ees8 f\chifNP aes\chifNote "ap" g4
+c1\chifDeg "T"
+NOTES
+
+
+## GRAVURE
+
+Pour les marches harmoniques, on pourrait utiliser les [crochets d'analyse](https://lilypond.org/doc/v2.24/Documentation/notation/outside-the-staff#analysis-brackets)

@@ -39,11 +39,12 @@ export interface AbsNoteType {
 }
 
 // Pour la tonalité, version simple [<note>, <altération>] ou TuneType
-export type SimpleTune = `${SimpleNote}${'b'|'d'|''}`;
-export type Tune = [SimpleNote, 'b' | 'd' | ''];
+export type SimpleTune = `${SimpleNote}${'b'|'d'|''}${'' | 'm'}`;
+export type Tune = [SimpleNote, 'b' | 'd' | '', 'min' | 'maj'];
 export interface TuneType {
   note: SimpleNote;
   alte: 'b' | 'd' | '' ;
+  nature: 'maj' | 'min';
 }
 
 export interface ContextType {
