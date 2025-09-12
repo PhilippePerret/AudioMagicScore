@@ -1,5 +1,6 @@
 import { Chord } from "./Chord";
 import { ContextType, NoteType } from "./Note";
+import { Tune } from "./Tune";
 
 /**
  * Class Analyzor
@@ -125,5 +126,27 @@ export class Analyzor {
     });
 
     return chords;
+  }
+
+
+  /**
+   * Discrimination des accords par leur fonction dans le contexte
+   * 
+   */
+  discrimineByFunction(
+    chords: Chord[],
+    contexte: ContextType
+  ): Chord[] {
+    // On ajoute dans le contexte la tonalité courant (l'instance)
+    const currentTune = new Tune(contexte.tune as string);
+    Object.assign(contexte, {tuneInstance: currentTune});
+    return chords.sort((aChord, bChord) => {
+      const funA = aChord.functionWeightInContext(contexte);
+      const funB = bChord.functionWeightInContext(contexte);
+      return funA > funB ? -1 : +1;
+    }).map((chord: Chord, index: number) => {
+      chord.rankByFunction = index + 1;
+      return chord;
+    })
   }
 }

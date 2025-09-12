@@ -9,30 +9,21 @@ L'application est formée de quatre parties distinctes mais fonctionnant ensembl
 
   Avant de graver, on passe par une **FUSION** des données des notes et des données d'analyse pour pouvoir les injecter dans le code Score-image.
 
-score-image << 'NOTES'
---piano
---chiffrage
---time 4/4
---tune Eb
-
--> essais-chiffrage
-c4\chifName "Cm" ees8 f aes g4
-c1\chifDeg "T"
-NOTES
-
-
-score-image << 'NOTES'
---piano
---chiffrage
---time 4/4
---tune Eb
-
--> essais-chiffrage
-c4\chifName "Cm" ees8 f\chifNP aes\chifNote "ap" g4
-c1\chifDeg "T"
-NOTES
-
 
 ## GRAVURE
 
 Pour les marches harmoniques, on pourrait utiliser les [crochets d'analyse](https://lilypond.org/doc/v2.24/Documentation/notation/outside-the-staff#analysis-brackets)
+
+## Annexe
+
+### Calcul du degré d'un accord quelconque dans la tonalité
+
+Il est possible de faire ça en concevant d'abord la tonalité courante.
+
+* note tonalité => note de départ (p.e. 'e')
+* genre tonalité (mineur/majeur) => gamme (sur deux octaves)
+* on prend ensuite les degrés deux par deux pour avoir tous les accords :
+  [0, 2, 4] => tonique
+  [1, 3, 5] => sus-tonique
+  [2, 4, 6] => mediane
+  [3, 5, 7] => Sous-dominante

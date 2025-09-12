@@ -7,7 +7,7 @@ import { Slice } from "./Slice";
  * 
  * Pour une note quelconque de la pièce
  */
-type SimpleNote = 'a'|'b'|'c'|'d'|'e'|'f'|'g';
+export type SimpleNote = 'a'|'b'|'c'|'d'|'e'|'f'|'g';
 type RealNote = `${SimpleNote}${''|'es'|'is'|'eses'|'isis'}`;
 export type DureeType = number;
 type ChromaticNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;

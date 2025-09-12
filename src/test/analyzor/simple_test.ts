@@ -3,6 +3,7 @@ import { Analyzor } from "../../classes/Analyzor";
 import { ContextType, NoteType } from "../../classes/Note";
 import { dupN, fa, la, mi, mib, si, sol, ut } from "../utils_tests";
 import { Chord } from "../../classes/Chord";
+import { Tune } from "../../classes/Tune";
 
 /**
  * Module pour faire des tests simples, c'est-à-dire des tests de
@@ -48,7 +49,7 @@ test("La discrimination par occurences fonctionne", () => {
   expect(res[0].rankByOccurences).toBe(1);
 })
 
-test.only("Discrimination pour durée", () => {
+test("Discrimination pour durée", () => {
   const contexte: ContextType = {tune: 'c'};
   const utshort = dupN(ut, {duree: 12});
   const silong = dupN(si, {duree: 128});
@@ -79,7 +80,7 @@ test.only("Discrimination par durée et occurence", () => {
   // qui pourra les départager
 });
 
-test.only("Discrimination par la fonction dans un context", () => {
+test("Discrimination par la fonction dans un context", () => {
   // Entre un accord de Do majeur et un accord de La mineur, 
   // dans un contexte de Em, c'est le Em qui l'emporte
    // On a un contexte simple…
@@ -103,4 +104,19 @@ test.only("Discrimination par la fonction dans un context", () => {
   expect(CM.id).toBe('accord-C');
   expect(Am.rankByFunction).toBe(Chord.FONCTIONS.SubDominante.rankValue);
  
+})
+
+
+test.only("Pour essai", () => {
+  let tune = new Tune('c');
+  expect(tune.getNotes()).toEqual(['c','d','e','f','g','a','b','c','d','e','f','g','a','b','c']);
+  tune = new Tune('em');
+  expect(tune.getNotes()).toEqual(['e','fd','g','a','b','c','dd','e','fd','g','a','b','c','dd','e']);
+  tune = new Tune('cb');
+  expect(tune.getNotes()).toEqual(['cb','db','eb','fb','gb','ab','bb','cb','db','eb','fb','gb','ab','bb','cb']);
+  tune = new Tune('eb');
+  expect(tune.getNotes()).toEqual(['eb','f','g','ab','bb','c','d','eb','f','g','ab','bb','c','d','eb']);
+  tune = new Tune('gdm');
+  expect(tune.getNotes()).toEqual(['gd','ad','b','cd','dd','e','fdd','gd','ad','b','cd','dd','e','fdd','gd']);
+  
 })

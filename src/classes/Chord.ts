@@ -21,6 +21,7 @@ export class Chord {
     // 2e degré, sus-tonique
     SusTonique: {rankValue: 4, after: {Dominante: +1}}, 
     // Sous-dominante, 4e degré
+    // AJOUTER if: [mineur, first_measures] => +3
     SubDominante: {rankValue: 3, after: {Tonique: +1}, if: {last_measures: +2}}, 
     // 3e degré (rare hors marche)
     Mediane: {rankValue: 1, if: {marche_harmonique: +2, classique: -1}, if_not: {classique: +2}}
@@ -357,9 +358,17 @@ export class Chord {
   /**
    * @return le poids de l'accord en fonction de sa nature dans la
    * tonalité fournie.
+   * C'est (je crois) le calcul de loin le plus compliqué. Déjà, il faut
+   * déterminer le degré de l'accord dans la tonalité courante et ensuite
+   * voir suivant le contexte plus précis (premières mesures, dernières, 
+   * développement, etc.) le poids qu'il prend ou qu'il perd.
    */
-  functionWeight(tune: TuneType): number {
+  functionWeightInContext(context: ContextType): number {
       let poids = 0; // pour le moment
+      // La première chose à faire est de déterminer ce qu'est 
+      // l'accord pour la tonalité courante (context.tune).
+      
+      throw new Error("Je dois apprendre à calculer le poids en fonction de la fonction");
     return poids; 
   }
 
