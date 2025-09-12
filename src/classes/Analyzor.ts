@@ -38,6 +38,7 @@ export class Analyzor {
     } else if (nombreCandidats == 2) {
       
       // => Il faut les discriminer pour choisir le plus probable
+
     } else {
       // <= Trop de candidats
       // => Il faut réduire la durée fournie (tranches) pour voir si

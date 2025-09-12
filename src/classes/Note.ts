@@ -1,3 +1,4 @@
+import { Chord } from "./Chord";
 import { MeasureType } from "./Measure";
 import { Slice } from "./Slice";
 
@@ -49,6 +50,10 @@ export interface TuneType {
 
 export interface ContextType {
   tune: SimpleTune | Tune | TuneType;
+  periode?: 'classique' | 'romantique' | 'baroque' | 'moderne' | undefined;
+  portion?: 'first_measures' | 'last_measures' | 'developpement' | undefined;
+  previous_chord?: Chord;
+  next_chord?: Chord;
   measure?: MeasureType;
   slice?: Slice; 
 }

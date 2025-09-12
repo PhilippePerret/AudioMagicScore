@@ -2,6 +2,11 @@ import { existsSync, unlinkSync } from "fs";
 import { DUREE, Note, NoteType } from "../classes/Note"
 import { join } from "path";
 
+// Pour DUPliquer une note (NoteType) en fournissant d'autres valeurs
+// si nécessaire.
+export function dupN(note: NoteType, newVals: {[x: string]: any} ) {
+  return Object.assign({...note}, newVals);
+}
 
 export function unlinkByIfExist(
   folder: string,

@@ -2,6 +2,29 @@ import { demiTonsBetween, intervalBetween } from "../utils/notes";
 import { ContextType, DUREE, DureeType, Note, NoteType, SimpleTune, Tune, TuneType } from "./Note";
 
 export class Chord {
+  // Définition des fonctions
+  // ---------------------------------------- 
+  // TODO Ajouter au contexte :
+  //  - marche_harmonique
+  //  - last_meaures
+  //  - classique (ou romantique, contemporain, baroque)
+  // TODO Ajouter au traitement discrimineByFunction
+  //  - propriété :after (autre fonction)
+  //  - propriété :if (contexte)
+  //  - propriété :if_not (contexte)
+  public static FONCTIONS = {
+    Tonique: {rankValue: 7, after: {Dominante: +1}}, // 1er degré
+    // Dominante, 5e degré
+    Dominante: {rankValue: 6, after: {Dominante: +1, SusTonique: +1}},
+    // Relatif, 6e degré
+    Relative: {rankValue: 5, after: {Dominante: +1}}, // 6e degré
+    // 2e degré, sus-tonique
+    SusTonique: {rankValue: 4, after: {Dominante: +1}}, 
+    // Sous-dominante, 4e degré
+    SubDominante: {rankValue: 3, after: {Tonique: +1}, if: {last_measures: +2}}, 
+    // 3e degré (rare hors marche)
+    Mediane: {rankValue: 1, if: {marche_harmonique: +2, classique: -1}, if_not: {classique: +2}}
+  }
   /**
    * @api
    * Fonction qui reçoit des notes au hasard et les ordonne pour former un
@@ -275,40 +298,7 @@ export class Chord {
     }
     return resultat;
   }
-
-  /**
-   * Fonction pour discriminer des accords (la plupart du temps dans
-   * une tranche-slice)
-   */
-  static discrimineChords(candidats: Chord[]): 
-    { favorite: Chord | undefined, highWeight: Chord[], lowWeight: Chord[] } 
-  {
-    // La table qui sera retournée
-    const discTbl = {
-      favorite: undefined,
-      highWeight: [],
-      lowWeight: []
-    }
-    const candidatsCount = candidats.length;
-
-    // On classe les accords par poids
-    const sorted = Chord.sortByWeight(candidats);
-
-    discTbl.favorite = sorted[0];
-    const nbHigh = candidatsCount > 3 ? 2 : 1;
-    discTbl.highWeight = sorted.slice(1, nbHigh);
-    if ( candidatsCount > 2 ) {
-      discTbl.lowWeight = sorted.slice(nbHigh, candidatsCount);
-    }
-
-    return discTbl;
-  }
-
-  private static sortByWeight(chords: Chord[]): Chord[]{
-    return chords.sort((a, b) => a.weight > b.weight ? -1 : 1)
-  }
-
-
+  
 
   /**
    * 
@@ -323,7 +313,6 @@ export class Chord {
   public rankByOccurences: number; // relatif au context, le rang, parmi plusieurs accords, en fonction de l'occurrence de ses notes
   public rankByFunction: number; // relatif au context, le rang, parmi plusieurs accords, en fonction de sa fonction harmonique
   private _weight: number;
-  public get weight(){ return this._weight || ( this._weight = this.calcWeight())}
 
   constructor(params: ChordParamType) {
     this.notes = params.notes;
@@ -338,11 +327,22 @@ export class Chord {
    * calcule le poids par rapport à un ensemble de notes données
    */
   get dureeAbsWeight(){
-    return this._dureeweight || (this._dureeweight = this.calcAbsDureeWeight())
+    return this._dureeweight || (this._dureeweight = this.sumOf('duree'))
   }
   private _dureeweight: number;
-  private calcAbsDureeWeight(): number{
-    return 0; // pour le moment
+  
+  /**
+   * Retourne la somme de la valeur de la propriété +property+ det
+   * toutes les notes de l'accord.
+   * 
+   * @param property La propriété qu'il faut prendre en compte
+   * @returns La somme 
+   */
+  sumOf(property: string): number {
+    return this.notes.reduce(
+      (accum, note) => accum + note[property], 0
+    )
+
   }
 
   /**
@@ -351,15 +351,6 @@ export class Chord {
    */
   dureeRelWeight(dureeTotale: number): number {
     let poids = this.dureeAbsWeight / dureeTotale * 100;
-    return poids; 
-  }
-
-  /**
-   * @return le poids en nombre de notes de l'accord dans un ensemble
-   * de notes +notes+ fourni
-   */
-  nbNotesWeight(notes: NoteType[]): number {
-    let poids = 0; // pour le moment
     return poids; 
   }
 
@@ -391,52 +382,8 @@ export class Chord {
       (accum, note) => accum + tableOccurences.get(note.rnote), 0
     )
   }
-
-  /**
-   * @obsolete (première fonction)
-   * Calcule le poids de l'accord
-   * 
-   * @returns Le poids de l'accord dans le contexte donné
-   */
-  calcWeight(): number {
-    
-    var poids = 0;
-
-    // -  Le POIDS est dépendant de la durée des notes
-    //    (pour le moment, on tient compte de la durée totale de la
-    //    note — si c'est vraiment elle qui est conservé dans la note
-    //    car ce n'est pas encore sûr).
-    //    Principe simple :
-    //      - les notes sous la croche ont un poids null (0)
-    //      - les notes entre la croche est la noire ont un  poids de 1
-    //      - les notes au-dessus de la noire ont un poids de 2
-    //    On additionne pour chaque note et on divise par le nombre de
-    //    notes.
-      const poidsDuree = this.notes.reduce(
-        (accum, note) => accum + this.pointDureeFor(note.duree),
-        0
-      ) / this.notes.length * 10 ;
-
-      poids += poidsDuree;
-
-    // -  Le poids est dépendant de la fonction de l'accord dans le
-    //    contexte tonal donné
-
-    // -  Le poids est dépendant de l'accord précédent (plus 
-    //    difficile à obtenir…)
-
-    // -  Le poids est dépendant de l'accord suivant (plus difficile
-    //    à calculer)
-
-    return poids ;
-  }
-
-  pointDureeFor(duree: DureeType) {
-    if      /* courte à très courte */ (duree < DUREE.croche) { return 0 }
-    else if /* moyenne */ (duree <= DUREE.noire) { return 1 }
-    else    /* longue à très longue */ { return 2 }
-  }
 }
+
 export interface ChordParamType {
   id?: string,
   notes: NoteType[];
