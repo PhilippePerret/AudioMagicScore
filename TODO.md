@@ -1,6 +1,8 @@
 # TODO
 
-* Class Score pour assembler plusieurs partitions
+* Production des fichiers Score-image pour produire les partitions
+* Production de l'analyse harmonique
+* Production des statistiques (à voir) 
 
 Quand j'aurais un algorithme qui fonctionnera à peu près, passer le test avec le "MENUET DE TRIO" (dans les plus beaux préludes de Bach). En fait, ça peut être un morceau test, tant il est complexe.
 
