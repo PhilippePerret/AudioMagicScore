@@ -1,5 +1,7 @@
 import { intervalBetween } from "../utils/notes";
-import { NoteType, SimpleNote } from "./Note"
+import { NoteType, SimpleNote, TuneType } from "./Note"
+
+type SimpleAlterStr = '' | 'b' | 'd';
 
 /**
  * Class Tune
@@ -8,17 +10,136 @@ import { NoteType, SimpleNote } from "./Note"
  * dans la tonalité.
  */
 export class Tune {
-  private static TUNES_INTERVALLES = {
-    Major: [2, 2, 1, 2, 2, 2, 1],
-    minor: [2, 1, 2, 2, 1, 3, 1],
+  // Les intervalles des gammes majeures et mineures
+  private static TUNE_INTERVALLES = {
+    maj: [2, 2, 1, 2, 2, 2, 1],
+    min: [2, 1, 2, 2, 1, 3, 1],
   }
-  private static _quickdata: Map<string, any>;
+  private static CHROM_SCALES = new Map();  // Elles ne seront faites qu'au besoin
+  private static SCALES = new Map();        // idem
+  private static NOTES_SPECS: Map<string, any>; // idem
 
+  // @return les spécificités de la note simple (i.e. sans altération) +note+
+  private static getNoteSpecs(note: SimpleNote){
+    if ( false === this.NOTES_SPECS.has(note)) {
+      const noteSpecs = ((n) => {
+        const m = new Map();
+        switch(n){
+          case 'c':
+            m.set('next', 'd'); m.set('indexChroma', 0); break;
+          case 'd':
+            m.set('next', 'e'); m.set('indexChroma', 2); break;
+          case 'e':
+            m.set('next', 'f'); m.set('indexChroma', 4); break;
+          case 'f':
+            m.set('next', 'g'); m.set('indexChroma', 5); break;
+          case 'g':
+            m.set('next', 'a'); m.set('indexChroma', 7); break;
+          case 'a':
+            m.set('next', 'b'); m.set('indexChroma', 9); break;
+          case 'b':
+            m.set('next', 'c'); m.set('indexChroma', 11); break;
+        }
+        return m;
+      })(note);
+      this.NOTES_SPECS.set(note, noteSpecs);
+    }
+    return this.NOTES_SPECS.get(note);
+  }
+
+  /**
+   * La donnée chromatique qui permet d'obtenir toutes les notes
+   * 
+   * Par exemple, si on a 'f' comme note de référence :
+   *  - f => note suivante "g"
+   *  - f => index 5 dans chromatique
+   *  - ton au-dessus = 7e note chromatique, en sol
+   *  - => CHROM[7]['g'] => 'g'
+   * 
+   * Plus intéressant, en Dm, on est à Sib
+   *  - Si => note suivante "c"
+   *  - Sib => index 10 dans chromatique
+   *  - 6e note de la gamme mineure 
+   *    => suivante +3
+   *    => (10 + 3) % 12 => 1
+   *  - => CHROM[1]['c'] => 'cd
+   */
+  private static CHROM_DATA = [
+    { 'b': 'bd', 'c': 'c', 'd': 'dbb' },  // 0 | c
+    { 'b': 'bdd', 'c': 'cd', 'd': 'db' }, // 1 | cd
+    { 'c': 'cdd', 'd': 'd', 'e': 'ebb' }, // 2 | d
+    { 'd': 'dd', 'e': 'eb', 'f': 'fbb' }, // 3 | eb
+    { 'd': 'ddd', 'e': 'e', 'f': 'fb' },  // 4 | e
+    { 'e': 'ed', 'f': 'f', 'g': 'gbb' },  // 5 | f
+    { 'e': 'edd', 'f': 'fd', 'g': 'gb' }, // 6 | fd
+    { 'f': 'fdd', 'g': 'g', 'a': 'abb' }, // 7 | g
+    { 'g': 'gd', 'a': 'ab' },             // 8 | ab
+    { 'g': 'gdd', 'a': 'a', 'b': 'bbb' }, // 9 | a
+    { 'a': 'ad', 'b': 'bb', 'c': 'cbb' }, // 10 | bb
+    { 'a': 'add', 'b': 'b', 'c': 'cb' },  // 11 | b
+  ]
+
+  // @return la gamme de ton +tune+
+  // Par exemple {note: 'd', alte: '', nature: 'min'}
+  // En la construisant au besoin
+  private static getScale(tune: TuneType) {
+    if (false === this.SCALES.has(tune)) { this.SCALES.set(tune, this.buildScale(tune)); }
+    return this.SCALES.get(tune);
+  }
+
+  private static buildScale({note, alte, nature}: TuneType) {
+    // La gamme qu'il faut construire
+    const notes: string[] = []; 
+    // Les intervalles en fonction de la nature
+    const intervalles = this.TUNE_INTERVALLES[nature]
+    let curNatNote = note;
+    let curNote = `${note}${alte}`;
+    let noteSpecs = this.getNoteSpecs(note);
+   
+    // Boucle sur chaque intervalles
+    intervalles.forEach(intervalle => {
+      const noteSpecs = this.getNoteSpecs(curNatNote);
+      const nextNatNote = noteSpecs.get('next');
+      // Calcul de l'indice chromatique de la note courante
+      const alter = curNote.substring(1, curNote.length) || '';
+      let indexChroma = noteSpecs.get('indexChroma')
+      indexChroma = this.adjustIndexChromaByAlter(indexChroma, alter);
+      // Calcul de l'index chromatique de la note suivante
+      const nextIndexChroma = (indexChroma + intervalle) % 12;
+      // On en déduit la nouvelle note courante
+      curNote =  this.CHROM_DATA[nextIndexChroma][nextNatNote];
+      // On enregistre la note dans la gamme
+      notes.push(curNote);
+      curNatNote = curNote.split('')[0] as SimpleNote; // on passe à la suivante
+    })
+    return notes;
+  }
+
+  // @return L'index chromatique exact en fonction de l'altération 
+  // fournie
+  private static adjustIndexChromaByAlter(
+    indexChroma: number, 
+    alter: string
+  ): number {
+    if (alter === '') { return indexChroma; }
+    indexChroma = ((alter) => {
+      switch (alter) {
+        case 'd': return indexChroma + 1;
+        case 'dd': return indexChroma + 2;
+        case 'b': return indexChroma - 1;
+        case 'bb': return indexChroma - 2;
+      }
+    })(alter);
+   if (indexChroma < 0) { indexChroma += 12; }
+   else if (indexChroma > 11) { indexChroma -= 12; }
+   return indexChroma;
+  }
 
   private notes: string[];
   private note: SimpleNote;
+  private alterStr: SimpleAlterStr;
   private alteration: 0 | 1 | -1;
-  private genre: 'minor' | 'Major';
+  private nature: 'min' | 'maj';
 
   constructor(
     private tune: string
@@ -30,193 +151,35 @@ export class Tune {
     switch(exp[0]){
       case 'b':
         this.alteration = -1;
-        exp.shift();
+        this.alterStr = exp.shift() as SimpleAlterStr;
         break;
       case 'd':
         this.alteration = 1;
-        exp.shift();
+        this.alterStr = exp.shift() as SimpleAlterStr;
         break;
+      default: 
+        this.alterStr = '';
     }
     g = exp.shift() || 'M';
 
     console.log("g = ", g);
-    this.genre = g === 'm' ? 'minor' : 'Major';
-    console.log("Genre gamme = %s", this.genre);
+    this.nature = g === 'm' ? 'min' : 'maj';
+    console.log("nature gamme = %s", this.nature);
     this.note = n as SimpleNote;
     this.build();
   }
 
   build(){
-    console.log("Début de la construction de la gamme %s", this.tune);
-    this.notes = [];
-    let lastNote: string = this.note;
-    if (this.alteration) {
-      if (this.alteration === 1 ) { lastNote += 'd'; }
-      else if (this.alteration === -1) { lastNote += 'b';}
-    }
-    this.notes.push(lastNote);
-    let curNote = String(this.note);
-    while(this.notes.length < 7) {
-      // La note suivante dans la gamme
-      curNote = this.nextNote(curNote);
-      console.log("Note suivante = %s", curNote);
-      // Intervalle requis entre cette note et la précédente
-      const reqInterv = Tune.TUNES_INTERVALLES[this.genre][this.notes.length - 1]
-      lastNote = this.notes[this.notes.length - 1];
-      const absInterv = this.intervalBetween(lastNote, curNote); 
-      console.log("Interval requis: %i, intervale entre les notes %s et précédente = %i", reqInterv, curNote, absInterv);
-      const diff = reqInterv - absInterv;
-      console.log("Différence: %i demi-tons", diff);
-      curNote = this.add(curNote, diff);
-      console.log("Note finale", curNote);
-      this.notes.push(curNote);
-    }
-    this.notes.push(...this.notes)
-    this.notes.push(this.notes[0]);
-    console.log("GAMMES de %s", this.tune, this.notes);
-  }
+    this.notes = Tune.buildScale({
+      note: this.note, 
+      alte: this.alterStr, 
+      nature: this.nature
+    });
+   console.log("GAMMES de %s", this.tune, this.notes);
 
-  private nextNote(note: string) {
-    return (this.quickData.get(note)).get('next');
   }
-  private intervalBetween(n1: string, n2: string): number {
-    return this.quickData.get(n1).get(n2);
-  }
-
-  // raccourci
-  private get quickData() { return Tune._quickdata; }
-
-  private add(note: string, demitons: number) {
-    if ( demitons === 0) { return note; }
-    switch(demitons){
-      case 0: return note;
-      case 1: return note + 'd';
-      case 2: return note + 'dd';
-      case -1: return note + 'b';
-      case -2: return note + 'bb';
-    }
-  }
- 
-  
-  static init() {
-    let n: Map<string, number | string>;
-    const QuickData = new Map();
     
-    n = new Map();
-    n.set('note', 'cb'); n.set('next', 'd');
-    n.set('bbb', 2); n.set('bb', 1); n.set('dbb', 1); n.set('db', 2);
-    QuickData.set(n.get('note'), n);
- 
-    const c = new Map();
-    c.set('note', 'c'); c.set('next', 'd');
-    c.set('bb', 2); c.set('b', 1); c.set('db', 1); c.set('d', 2);
-    QuickData.set('c', c);
-
-    n = new Map();
-    n.set('note', 'cd'); n.set('next', 'd');
-    n.set('b', 2); n.set('bd',1); n.set('d', 1); n.set('dd', 2);
-    QuickData.set('n', n);
-
-    n = new Map();
-    n.set('note', 'db'); n.set('next', 'e');
-    n.set('cb', 2); n.set('c', 1); n.set('ebb', 1); n.set('eb', 2);
-    QuickData.set('dd', n);
- 
-   const d = new Map();
-    d.set('note', 'd'); d.set('next', 'e');
-    d.set('c', 2); d.set('cd', 1); d.set('eb', 1); d.set('e', 2);
-    QuickData.set('d', d);
-
-    n = new Map();
-    n.set('note', 'dd'); n.set('next', 'e');
-    n.set('cd', 2); n.set('cdd',1); n.set('e', 1); n.set('ed',2);
-    QuickData.set('n', n);
-
-    n = new Map();
-    n.set('note', 'eb'); n.set('next', 'f');
-    n.set('db', 2); n.set('d', 1); n.set('fb', 1); n.set('f', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'e'); n.set('next', 'f');
-    n.set('d', 2); n.set('dd', 1); n.set('f', 1); n.set('fd', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'ed'); n.set('next', 'f');
-    n.set('dd', 2); n.set('ddd', 1); n.set('fd', 1); n.set('fdd', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'fb'); n.set('next', 'g');
-    n.set('ebb', 2); n.set('eb', 1); n.set('gbb', 1); n.set('gb', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'f'); n.set('next', 'g');
-    n.set('eb', 2); n.set('e', 1); n.set('gb', 1), n.set('g', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'fd'); n.set('next', 'g');
-    n.set('e', 2); n.set('ed', 1); n.set('g', 1); n.set('gd', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'gb'); n.set('next', 'a');
-    n.set('fb', 2); n.set('f', 1); n.set('abb', 1); n.set('ab', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'g'); n.set('next', 'a');
-    n.set('f',2); n.set('fd', 1); n.set('ab', 1); n.set('a', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'gd'); n.set('next', 'a');
-    n.set('fd',2); n.set('fdd', 1); n.set('a', 1); n.set('ad', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'ab'); n.set('next', 'b');
-    n.set('gb', 2); n.set('g', 1); n.set('bbb', 1); n.set('bb', 2);
-    QuickData.set(n.get('note'), n);
-
-    n : new Map();
-    n.set('note', 'a'); n.set('next', 'b');
-    n.set('g', 2); n.set('gd', 1); n.set('bb', 1); n.set('b', 2);
-    QuickData.set(n.get('note'), n);
-    
-    n = new Map();
-    n.set('note', 'ad'); n.set('next', 'b');
-    n.set('gd', 2); n.set('gdd', 1); n.set('b', 1); n.set('bd', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'bb'); n.set('next', 'c');
-    n.set('ab', 2); n.set('a',1); n.set('cb', 1); n.set('c', 2);
-    QuickData.set(n.get('note'), n);
-
-    n =  new Map();
-    n.set('note', 'b'); n.set('next', 'c');
-    n.set('a', 2); n.set('ad', 1); n.set('c', 1); n.set('cd', 2);
-    QuickData.set(n.get('note'), n);
-
-    n = new Map();
-    n.set('note', 'bd'); n.set('next', 'c');
-    n.set('ad', 2); n.set('add', 1); n.set('cd',1); n.set('cdd',2);
-    QuickData.set(n.get('note'), n);
-  
-    Tune._quickdata = QuickData;
-  }
-
-
- 
- 
 
   // === FONCTIONS DE DEBUG ===
   getNotes(){ return this.notes; }
 }
-
-
-Tune.init();
