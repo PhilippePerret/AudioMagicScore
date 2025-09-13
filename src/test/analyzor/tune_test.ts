@@ -36,6 +36,7 @@ test.only("Tune sais déterminer tous les accords d'une tonalité quelconque", (
     [['f','a','c','e'], 'sous-dominante'  , 'IV7M', 'F7M'],
     [['g','b','d']    , 'dominante'       , 'V'   , 'G'],
     [['g','b','d','f'], 'dominante'       , 'V7'  , 'G7'],
+    [['g','c','d','f'], 'dominante-sus4'  , 'V7+4', 'G7+4'],
     [['a','c','e']    , 'sus-dominante'   , 'VI'  , 'Am'],
     [['b','d','f']    , 'sous-tonique'    , 'VII' , 'B5-'],
     [['b','d','f','a'], 'sous-tonique'    , 'VIIo/','Bo/'],
@@ -64,9 +65,32 @@ test.only("Tune sais déterminer tous les accords d'une tonalité quelconque", (
   chords = tune.getChords();
   [
     [['gd','b','dd'], 'tonique', 'I', 'Gdm'],
+    [['gd','b','dd','fdd'], 'tonique', 'I7M', 'Gdm7M'],
+    [['ad','cd','e'], 'sus-tonique', 'II', 'Ad5-'],
+    [['ad','cd','e','gd'], 'sus-tonique', 'IIo/', 'Ado/'],
+    [['b','dd','fdd'], 'mediante', 'III', 'B5+'],
+    [['cd','e','gd'], 'sous-dominante', 'IV', 'Cdm'],
+    [['cd','e','gd','b'], 'sous-dominante', 'IV7', 'Cdm7'],
+    [['dd','fdd','ad'], 'dominante', 'V', 'Dd'],
+    [['dd','fdd','ad','cd'], 'dominante', 'V7', 'Dd7'],
+    [['e','gd','b'], 'sus-dominante', 'VI', 'E'],
+    [['e','gd','b','dd'], 'sus-dominante', 'VI7M', 'E7M'],
+    [['fdd','ad','cd'], 'sous-tonique', 'VII', 'Fdd5-'],
+    [['fdd','ad','cd','e'], 'sous-tonique', 'VIIo', 'Fddo'],
+    // Accord hors tonalité
+    // [['ad','cdd','ed'], 'dom-de-dom', 'V/V', 'Ad'],
+    // [['ad','cdd','ed','gd'], 'dom-de-dom', 'V7/V', 'Ad7'],
+    [['cdd','ed','gd','b'], '7e-de-sensible-de-dom', 'VIIo/V', 'Cddo'],
+    [['a','cd','e'], 'napolitaine', 'N', 'A'],
+    [['e','gd','b','cdd'], 'sixte-aug-allemande', 'VI+', 'E6+'],
+    [['e','gd','ad','cdd'], 'sixte-aug-francaise', 'VI+', 'AdM75-'],
+    [['e','gd','cdd'], 'sixte-aug-italienne', 'VI+', 'E6+'],
   ].forEach(([notes, fonction, chiffre, nom]: [any, string, string, string]) => {
     const kchord = notes.join('-');
     console.log("Test de l'accord : ", kchord);
+    if ( ! chords.has(kchord)){
+      console.error("Clé inconnue %s dans", kchord, chords.keys() );
+    }
     console.log("Dans chords", chords.get(kchord));
     expect(chords.has(kchord)).toBeTrue();
     const chord = chords.get(kchord);

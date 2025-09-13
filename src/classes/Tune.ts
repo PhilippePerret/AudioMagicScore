@@ -196,7 +196,9 @@ export class Tune {
         { degs: [3, 5, 0], function: 'sous-dominante', chiffre: 'IV', name: '_N_', weight: 8, weight_if: [ {cond: ['last_measures'], value: 10 }]},
         { degs: [3, 5, 0, 2], function: 'sous-dominante', chiffre: 'IV7M', name: '_N_7M', weight: 8},
         { degs: [4, 6, 1], function: 'dominante', chiffre: 'V', name: '_N_', weight: 10},
+        { degs: [4, 0, 1], function: 'dominante-sus4', chiffre: 'V+4', name: '_N_+4', weight: 9.5},
         { degs: [4, 6, 1, 3], function: 'dominante', chiffre: 'V7', name: '_N_7', weight: 12},
+        { degs: [4, 0, 1, 3], function: 'dominante-sus4', chiffre: 'V7+4', name: '_N_7+4', weight: 12},
         { degs: [5, 0, 2], function: 'sus-dominante', chiffre: 'VI', name: '_N_m', weight: 7},
         { degs: [5, 0, 2, 4], function: 'sus-dominante', chiffre: 'VI', name: '_N_m7', weight: 8},
         { degs: [6, 1, 3], function: 'sous-tonique', chiffre: 'VII', name: '_N_5-', weight: 12},
@@ -220,15 +222,22 @@ export class Tune {
         { degs: [2, 4, 6], function: 'mediante', chiffre: 'III', name: '_N_5+', weight: 4},
         { degs: [2, 4, 6, 1], function: 'mediante', chiffre: 'III7', name: '_N_75+', weight: 3, weight_if: [{cond: ['marche_harmonique'], value: 8}]},
         { degs: [3, 5, 0], function: 'sous-dominante', chiffre: 'IV', name: '_N_m', weight: 8, weight_if: [ {cond: ['last_measures', 'first_measures'], value: 10 }]},
-        { degs: [3, 5, 0, 2], function: 'sous-dominante', chiffre: 'IVm7', name: '_N_m7', weight: 8},
+        { degs: [3, 5, 0, 2], function: 'sous-dominante', chiffre: 'IV7', name: '_N_m7', weight: 8},
         { degs: [4, 6, 1], function: 'dominante', chiffre: 'V', name: '_N_', weight: 10},
         { degs: [4, 6, 1, 3], function: 'dominante', chiffre: 'V7', name: '_N_7', weight: 12},
         { degs: [5, 0, 2], function: 'sus-dominante', chiffre: 'VI', name: '_N_', weight: 8},
-        { degs: [5, 0, 2, 4], function: 'sus-dominante', chiffre: 'VI', name: '_N_7M', weight: 8},
+        { degs: [5, 0, 2, 4], function: 'sus-dominante', chiffre: 'VI7M', name: '_N_7M', weight: 8},
         { degs: [6, 1, 3], function: 'sous-tonique', chiffre: 'VII', name: '_N_5-', weight: 12},
         { degs: [6, 1, 3, 5], function: 'sous-tonique', chiffre: 'VIIo', name: '_N_o', weight: 11},
         // Autres accords (hors gammes)
-        { degs: [[1, -1], 3, [5, -1]], function: 'napolitaine', chiffre: 'N', name: '_N_', weight: 8},
+        // { degs: [1, [3, +1], [5, 1]], function: 'dom-de-dom', chiffre: 'V/V', name: '_N_', weight: 6},
+        // { degs: [1, [3, +1], 5, 0], function: 'dom-de-dom', chiffre: 'V7/V', name: '_N_7', weight: 7},
+        { degs: [[3, +1], [5,+1], 0, 2], function: '7e-de-sensible-de-dom', chiffre: 'VIIo/V', name: '_N_o', weight: 9},
+        { degs: [[1, -1], 3, 5], function: 'napolitaine', chiffre: 'N', name: '_N_', weight: 8},
+        { degs: [5, 0, 2, [3, +1]], function: 'sixte-aug-allemande', chiffre: 'VI+', name: '_N_6+', weight: 6},
+        { degs: [5, 0, 1, [3, +1]], function: 'sixte-aug-francaise', chiffre: 'VI+', name: (notes) => '_N_M75-'.replace(/_N_/, notes[2]), weight: 6},
+        { degs: [5, 0, [3, +1]], function: 'sixte-aug-italienne', chiffre: 'VI+', name: '_N_6+', weight: 6},
+
 
 
  
