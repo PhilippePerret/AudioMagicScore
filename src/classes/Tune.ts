@@ -1,3 +1,4 @@
+import { throwError } from "../utils/message";
 import { intervalBetween } from "../utils/notes";
 import { NoteType, SimpleNote, TuneType } from "./Note"
 
@@ -12,12 +13,12 @@ type SimpleAlterStr = '' | 'b' | 'd';
 export class Tune {
   // Les intervalles des gammes majeures et mineures
   private static TUNE_INTERVALLES = {
-    maj: [2, 2, 1, 2, 2, 2, 1],
-    min: [2, 1, 2, 2, 1, 3, 1],
+    maj: [2, 2, 1, 2, 2, 2],
+    min: [2, 1, 2, 2, 1, 3],
   }
   private static CHROM_SCALES = new Map();  // Elles ne seront faites qu'au besoin
   private static SCALES = new Map();        // idem
-  private static NOTES_SPECS: Map<string, any>; // idem
+  private static NOTES_SPECS: Map<string, any> = new Map(); // idem
 
   // @return les spécificités de la note simple (i.e. sans altération) +note+
   private static getNoteSpecs(note: SimpleNote){
@@ -94,6 +95,7 @@ export class Tune {
     const intervalles = this.TUNE_INTERVALLES[nature]
     let curNatNote = note;
     let curNote = `${note}${alte}`;
+    notes.push(curNote);
     let noteSpecs = this.getNoteSpecs(note);
    
     // Boucle sur chaque intervalles
@@ -136,6 +138,14 @@ export class Tune {
   }
 
   private notes: string[];
+  /**
+   * Données sur les accords
+   * Attention, malgré son petit nom, cette donnée est fondamentale
+   * dans l'instance Tune, car elle définit tous les accords de
+   * chaque tonalité (de la tonalité de l'instance) et renseignant
+   * son nom, sa fonction, son chiffrage, etc.
+   */
+  private chords: Map<any, any>;
   private note: SimpleNote;
   private alterStr: SimpleAlterStr;
   private alteration: 0 | 1 | -1;
@@ -170,6 +180,124 @@ export class Tune {
   }
 
   build(){
+    this.buildScale(); // ne pas confondre avec la méthode de classe
+    this.buildChords(); 
+  }
+
+  private static CHORDS_DATA = {
+    'maj':
+      [
+        { degs: [0, 2, 4], function: 'tonique', chiffre: 'I', name: '_N_', weight: 12},
+        { degs: [0, 2, 4, 6], function: 'tonique', chiffre: 'I7M', name: '_N_7M', weight: 5},
+        { degs: [1, 3, 5], function: 'sus-tonique', chiffre: 'II', name: '_N_m', weight: 9},
+        { degs: [1, 3, 5, 0], function: 'sus-tonique', chiffre: 'II7', name: '_N_m7', weight: 11},
+        { degs: [2, 4, 6], function: 'mediante', chiffre: 'III', name: '_N_m', weight: 3},
+        { degs: [2, 4, 6, 1], function: 'mediante', chiffre: 'III7', name: '_N_m7', weight: 3, weight_if: [{cond: ['marche_harmonique'], value: 8}]},
+        { degs: [3, 5, 0], function: 'sous-dominante', chiffre: 'IV', name: '_N_', weight: 8, weight_if: [ {cond: ['last_measures'], value: 10 }]},
+        { degs: [3, 5, 0, 2], function: 'sous-dominante', chiffre: 'IV7M', name: '_N_7M', weight: 8},
+        { degs: [4, 6, 1], function: 'dominante', chiffre: 'V', name: '_N_', weight: 10},
+        { degs: [4, 6, 1, 3], function: 'dominante', chiffre: 'V7', name: '_N_7', weight: 12},
+        { degs: [5, 0, 2], function: 'sus-dominante', chiffre: 'VI', name: '_N_m', weight: 7},
+        { degs: [5, 0, 2, 4], function: 'sus-dominante', chiffre: 'VI', name: '_N_m7', weight: 8},
+        { degs: [6, 1, 3], function: 'sous-tonique', chiffre: 'VII', name: '_N_5-', weight: 12},
+        { degs: [6, 1, 3, 5], function: 'sous-tonique', chiffre: 'VIIo/', name: '_N_o/', weight: 6},
+        // Autres accords (hors gammes)
+        { degs: [1, [3, +1], 5], function: 'dom-de-dom', chiffre: 'V/V', name: '_N_', weight: 6},
+        { degs: [1, [3, +1], 5, 0], function: 'dom-de-dom', chiffre: 'V7/V', name: '_N_7', weight: 7},
+        { degs: [6, 1, 3, [5, -1]], function: '7e-dim-de-sensible', chiffre: 'VIIo', name: '_N_o', weight: 10},
+        { degs: [[3, +1], 5, 0, [2, -1]], function: '7e-de-sensible-de-dom', chiffre: 'VIIo/V', name: '_N_o', weight: 9},
+        { degs: [[1, -1], 3, [5, -1]], function: 'napolitaine', chiffre: 'N', name: '_N_', weight: 4},
+        { degs: [[5, -1], 0, [2, -1], [3, +1]], function: 'sixte-aug-allemande', chiffre: 'VI+', name: '_N_6+', weight: 6},
+        { degs: [[5, -1], 0, 1, [3, +1]], function: 'sixte-aug-francaise', chiffre: 'VI+', name: (notes) => '_N_M75-'.replace(/_N_/, notes[2]), weight: 6},
+        { degs: [[5, -1], 0, [3, +1]], function: 'sixte-aug-italienne', chiffre: 'VI+', name: '_N_6+', weight: 6},
+
+      ],
+    'min': [
+        { degs: [0, 2, 4], function: 'tonique', chiffre: 'I', name: '_N_m', weight: 12},
+        { degs: [0, 2, 4, 6], function: 'tonique', chiffre: 'I7M', name: '_N_m7M', weight: 3},
+        { degs: [1, 3, 5], function: 'sus-tonique', chiffre: 'II', name: '_N_5-', weight: 6},
+        { degs: [1, 3, 5, 0], function: 'sus-tonique', chiffre: 'IIo/', name: '_N_o/', weight: 7},
+        { degs: [2, 4, 6], function: 'mediante', chiffre: 'III', name: '_N_5+', weight: 4},
+        { degs: [2, 4, 6, 1], function: 'mediante', chiffre: 'III7', name: '_N_75+', weight: 3, weight_if: [{cond: ['marche_harmonique'], value: 8}]},
+        { degs: [3, 5, 0], function: 'sous-dominante', chiffre: 'IV', name: '_N_m', weight: 8, weight_if: [ {cond: ['last_measures', 'first_measures'], value: 10 }]},
+        { degs: [3, 5, 0, 2], function: 'sous-dominante', chiffre: 'IVm7', name: '_N_m7', weight: 8},
+        { degs: [4, 6, 1], function: 'dominante', chiffre: 'V', name: '_N_', weight: 10},
+        { degs: [4, 6, 1, 3], function: 'dominante', chiffre: 'V7', name: '_N_7', weight: 12},
+        { degs: [5, 0, 2], function: 'sus-dominante', chiffre: 'VI', name: '_N_', weight: 8},
+        { degs: [5, 0, 2, 4], function: 'sus-dominante', chiffre: 'VI', name: '_N_7M', weight: 8},
+        { degs: [6, 1, 3], function: 'sous-tonique', chiffre: 'VII', name: '_N_5-', weight: 12},
+        { degs: [6, 1, 3, 5], function: 'sous-tonique', chiffre: 'VIIo', name: '_N_o', weight: 11},
+        // Autres accords (hors gammes)
+        { degs: [[1, -1], 3, [5, -1]], function: 'napolitaine', chiffre: 'N', name: '_N_', weight: 8},
+
+
+ 
+    ]
+
+  } 
+  
+  private buildChords(){
+    let diff: number ;
+    this.chords = new Map();
+    Tune.CHORDS_DATA[this.nature].forEach((cdata: any) => {
+      const cnotes = cdata.degs.map((index: number | Array<number | 1 | -1>): string => {
+        if ( 'number' === typeof index) {
+          return this.notes[index] as string
+        } else {
+          [index, diff] = index;
+          return this.getNoteWithDiff(this.notes[index], diff as 1 | -1); 
+        }
+      });
+      const cmap = new Map(Object.entries(cdata));
+      cmap.set('notes', cnotes);
+      console.log("cnotes", cnotes);
+      let name: any;
+      if ('string' === typeof cdata.name) {
+        name = cnotes[0];
+        name = cdata.name.replace(/_N_/, name);
+      } else {
+        name = cdata.name(cnotes);
+      }
+      name = name.split('');
+      name[0] = name[0].toUpperCase();
+      name = name.join('');
+      cmap.set('name', name);
+      // Les deux clés pour obtenir l'accord (array de ses notes + chiffrage)
+      const kchord = cnotes.join('-');
+      // console.log("Clé de l'accord %s : '%s'", cmap.get('function'), kchord, cnotes);
+      this.chords.set(kchord, cmap);
+      // this.chords.has(cnotes) || throwError('build-chord-key-array-error')
+      this.chords.set(cmap.get('chiffre'), cmap);
+    })
+    // console.log("This.chords final", this.chords);
+  }
+  
+  /**
+   * Méthode qui reçoit la note +note+ et la renvoie avec la diffé-
+   * de demitons +diff+.
+   * Par exemple : 
+   *    c, +1 => cd
+   *    c, -1 => cb
+   *    cd, -1 => c 
+   */
+  private getNoteWithDiff(note: string, diff: 1 | -1){
+    switch(diff) {
+      case +1:
+        if ( note.endsWith('b')) { return note.substring(0, note.length - 1);}
+        else { return note + 'd'; }
+      case -1:
+        if ( note !== 'd' && note.endsWith('d')) { return note.substring(0, note.length - 1);}
+        else { return note + 'b'; }
+    }
+
+  }
+
+  /**
+   * Construction de la gamme
+   * Produit this.notes, qui contient les 7 notes de la gamme de la
+   * tonalité courante.
+   */
+  private buildScale(){
     this.notes = Tune.buildScale({
       note: this.note, 
       alte: this.alterStr, 
@@ -182,4 +310,5 @@ export class Tune {
 
   // === FONCTIONS DE DEBUG ===
   getNotes(){ return this.notes; }
+  getChords() { return this.chords; }
 }

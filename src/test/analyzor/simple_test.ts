@@ -106,17 +106,17 @@ test("Discrimination par la fonction dans un context", () => {
  
 })
 
-
 test.only("Pour essai", () => {
   let tune = new Tune('c');
-  expect(tune.getNotes()).toEqual(['c','d','e','f','g','a','b','c','d','e','f','g','a','b','c']);
+  expect(tune.getNotes()).toEqual(['c','d','e','f','g','a','b']);
   tune = new Tune('em');
-  expect(tune.getNotes()).toEqual(['e','fd','g','a','b','c','dd','e','fd','g','a','b','c','dd','e']);
+  expect(tune.getNotes()).toEqual(['e','fd','g','a','b','c','dd',]);
   tune = new Tune('cb');
-  expect(tune.getNotes()).toEqual(['cb','db','eb','fb','gb','ab','bb','cb','db','eb','fb','gb','ab','bb','cb']);
+  expect(tune.getNotes()).toEqual(['cb','db','eb','fb','gb','ab','bb']);
   tune = new Tune('eb');
-  expect(tune.getNotes()).toEqual(['eb','f','g','ab','bb','c','d','eb','f','g','ab','bb','c','d','eb']);
+  expect(tune.getNotes()).toEqual(['eb','f','g','ab','bb','c','d']);
   tune = new Tune('gdm');
-  expect(tune.getNotes()).toEqual(['gd','ad','b','cd','dd','e','fdd','gd','ad','b','cd','dd','e','fdd','gd']);
-  
+  expect(tune.getNotes()).toEqual(['gd','ad','b','cd','dd','e','fdd']);
+  tune = new Tune('dm');
+  expect(tune.getNotes()).toEqual(['d','e','f','g','a','bb','cd']);
 })

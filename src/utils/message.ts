@@ -10,7 +10,8 @@ const ERRORS = {
   'assemble-empty-folder': ['Empty folder:', 0],
   'bad-extension': ['Bad extension (.mei required):', 0],
   'no-path-provided': 'No path provided.',
-
+  // --- Tune ---
+  'build-chord-key-array-error': "Bizarrement, la clé array avec les notes de l'accord ne fonctionne pas",
 
 }
 export function throwError(msgId: keyof typeof ERRORS, params: {[x: string]: string} | string[] | undefined = undefined) {
