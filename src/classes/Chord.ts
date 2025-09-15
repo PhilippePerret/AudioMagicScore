@@ -1,31 +1,46 @@
 import { demiTonsBetween, intervalBetween } from "../utils/notes";
-import { ContextType, DUREE, DureeType, Note, NoteType, SimpleTune, Tune, TuneType } from "./Note";
+import { ContextType, Note, NoteType } from "./Note";
+
+export type ChordFunction = 'Tonique' | 'Sus-Tonique' | 'Mediante' | 'Sous-Dominante' 
+  | 'Dominante' | 'DominanteSus4' | 'Sus-Dominante' | 'Sous-Tonique' 
+  | 'Dom-de-Dom' | '7e-dim-de-sensible' | '7e-de-sensible-de-dom'
+  | 'Napolitaine' | 'Sixte-aug-italienne' | 'Sixte-aug-francaise' | 'Sixte-aug-allemande';
 
 export class Chord {
+
   // Définition des fonctions
   // ---------------------------------------- 
   // TODO Ajouter au contexte :
   //  - marche_harmonique
-  //  - last_meaures
+  //  - last_measures
+  //  - first_measures
   //  - classique (ou romantique, contemporain, baroque)
   // TODO Ajouter au traitement discrimineByFunction
   //  - propriété :after (autre fonction)
   //  - propriété :if (contexte)
   //  - propriété :if_not (contexte)
-  public static FONCTIONS = {
-    Tonique: {rankValue: 7, after: {Dominante: +1}}, // 1er degré
-    // Dominante, 5e degré
-    Dominante: {rankValue: 6, after: {Dominante: +1, SusTonique: +1}},
-    // Relatif, 6e degré
-    Relative: {rankValue: 5, after: {Dominante: +1}}, // 6e degré
-    // 2e degré, sus-tonique
-    SusTonique: {rankValue: 4, after: {Dominante: +1}}, 
-    // Sous-dominante, 4e degré
-    // AJOUTER if: [mineur, first_measures] => +3
-    SubDominante: {rankValue: 3, after: {Tonique: +1}, if: {last_measures: +2}}, 
-    // 3e degré (rare hors marche)
-    Mediane: {rankValue: 1, if: {marche_harmonique: +2, classique: -1}, if_not: {classique: +2}}
+  public static FUNCTIONS = {
+    Tonique: 'Tonique' as ChordFunction,
+    SusTonique: 'Sus-Tonique' as ChordFunction,
+    Mediante: 'Mediante' as ChordFunction,
+    SousDominante: 'Sous-Dominante' as ChordFunction,
+    SubDominante: 'Sous-Dominante' as ChordFunction,
+    Dominante: 'Dominante' as ChordFunction,
+    DominanteSus4: 'DominanteSus4' as ChordFunction,
+    SusDominante: 'Sus-Dominante' as ChordFunction,
+    SousTonique: 'Sous-Tonique' as ChordFunction,
+    SubTonique: 'Sous-Tonique' as ChordFunction,
+    // Autres fonctions
+    DomDeDom: 'Dom-de-Dom' as ChordFunction,
+    SeptDimDeSensible: '7e-dim-de-sensible' as ChordFunction,
+    SeptDeSensibleDeDom: '7e-de-sensible-de-dom' as ChordFunction,
+    Napolitaine: 'Napolitaine' as ChordFunction,
+    SixteAugAllemande: 'Sixte-aug-allemande' as ChordFunction,
+    SixteAugItalienne: 'Sixte-aug-italienne' as ChordFunction,
+    SixteAugFrancaise: 'Sixte-aug-francaise' as ChordFunction
+
   }
+  
   /**
    * @api
    * Fonction qui reçoit des notes au hasard et les ordonne pour former un
@@ -322,6 +337,14 @@ export class Chord {
   }
 
   /**
+   * Retourne la fonction de l'accord dans le contexte donné
+   */
+  public functionInContext(context: ContextType): ChordFunction {
+    const dataChord = context.tuneInstance.getDataChord(this.notes.map(n => n.rnote));
+    return dataChord.get('function') as ChordFunction;
+  }
+
+  /**
    * @return le poids en durée de l'accord (somme de la durée de
    * toutes ses notes)
    * Note : ne pas confondre avec la fonction dureeRelWeigth qui 
@@ -343,7 +366,6 @@ export class Chord {
     return this.notes.reduce(
       (accum, note) => accum + note[property], 0
     )
-
   }
 
   /**
@@ -364,12 +386,11 @@ export class Chord {
    * développement, etc.) le poids qu'il prend ou qu'il perd.
    */
   functionWeightInContext(context: ContextType): number {
-      let poids = 0; // pour le moment
-      // La première chose à faire est de déterminer ce qu'est 
-      // l'accord pour la tonalité courante (context.tune).
-      
-      throw new Error("Je dois apprendre à calculer le poids en fonction de la fonction");
-    return poids; 
+    let poids = 0; // pour le moment
+    // La première chose à faire est de déterminer ce qu'est 
+    // l'accord pour la tonalité courante (context.tune).
+    const tune = context.tuneInstance;
+    return tune.weightOfChord(this.notes);
   }
 
 

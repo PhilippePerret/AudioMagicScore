@@ -1,6 +1,7 @@
 import { Chord } from "./Chord";
 import { MeasureType } from "./Measure";
 import { Slice } from "./Slice";
+import { Tune } from "./Tune";
 
 /**
  * Type NoteType
@@ -41,7 +42,7 @@ export interface AbsNoteType {
 
 // Pour la tonalité, version simple [<note>, <altération>] ou TuneType
 export type SimpleTune = `${SimpleNote}${'b'|'d'|''}${'' | 'm'}`;
-export type Tune = [SimpleNote, 'b' | 'd' | '', 'min' | 'maj'];
+export type TuneSimpleType = [SimpleNote, 'b' | 'd' | '', 'min' | 'maj'];
 export interface TuneType {
   note: SimpleNote;
   alte: 'b' | 'd' | '' ;
@@ -49,7 +50,8 @@ export interface TuneType {
 }
 
 export interface ContextType {
-  tune: SimpleTune | Tune | TuneType;
+  tune: SimpleTune | TuneSimpleType | TuneType;
+  tuneInstance: Tune;
   periode?: 'classique' | 'romantique' | 'baroque' | 'moderne' | undefined;
   portion?: 'first_measures' | 'last_measures' | 'developpement' | undefined;
   previous_chord?: Chord;

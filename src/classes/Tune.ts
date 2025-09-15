@@ -1,5 +1,6 @@
 import { throwError } from "../utils/message";
 import { intervalBetween } from "../utils/notes";
+import { Chord } from "./Chord";
 import { NoteType, SimpleNote, TuneType } from "./Note"
 
 type SimpleAlterStr = '' | 'b' | 'd';
@@ -11,6 +12,39 @@ type SimpleAlterStr = '' | 'b' | 'd';
  * dans la tonalité.
  */
 export class Tune {
+
+  /**
+   * @api
+   * 
+   * Retourne le poids d'un accord quelconque dans le contexte d'une
+   * tonalité donnée (ce Tune)
+   */
+  public weightOfChord(notes: any[]): number {
+    console.log("Notes transmises", notes);
+    const realNotes = notes.map(dnote => dnote.rnote);
+    const dataChord = this.getDataChord(realNotes);
+    console.log("Data de l'accord %s : ", realNotes.join('-'), dataChord);
+    return dataChord.get('weight');
+  }
+
+  public getDataChord(notes: string[]): Map<string, any> {
+    const chordKey = notes.join('-');
+    if ( this.chords.has(chordKey) ) {
+      return this.chords.get(chordKey);
+    } else {
+      // Accord inconnu dans ce contexte
+      // TODO Il faudrait pouvoir calculer son éloignement du context
+      // tonal courant
+      const map = new Map();
+      map.set('fonction', 'unknown');
+      map.set('weight', -1);
+      return map;
+    }
+
+  }
+
+  //=============== /FIN DE L'API ==================
+
   // Les intervalles des gammes majeures et mineures
   private static TUNE_INTERVALLES = {
     maj: [2, 2, 1, 2, 2, 2],
@@ -88,6 +122,12 @@ export class Tune {
     return this.SCALES.get(tune);
   }
 
+  /**
+   * Construit une gamme quelconque à partir de la note et du genre
+   * 
+   * @param {<note>, <alteration>, <majeur ou mineur>}
+   * @returns 
+   */
   private static buildScale({note, alte, nature}: TuneType) {
     // La gamme qu'il faut construire
     const notes: string[] = []; 
@@ -184,63 +224,60 @@ export class Tune {
     this.buildChords(); 
   }
 
+  private static readonly CHFCT = Chord.FUNCTIONS;
   private static CHORDS_DATA = {
     'maj':
       [
-        { degs: [0, 2, 4], function: 'tonique', chiffre: 'I', name: '_N_', weight: 12},
-        { degs: [0, 2, 4, 6], function: 'tonique', chiffre: 'I7M', name: '_N_7M', weight: 5},
-        { degs: [1, 3, 5], function: 'sus-tonique', chiffre: 'II', name: '_N_m', weight: 9},
-        { degs: [1, 3, 5, 0], function: 'sus-tonique', chiffre: 'II7', name: '_N_m7', weight: 11},
-        { degs: [2, 4, 6], function: 'mediante', chiffre: 'III', name: '_N_m', weight: 3},
-        { degs: [2, 4, 6, 1], function: 'mediante', chiffre: 'III7', name: '_N_m7', weight: 3, weight_if: [{cond: ['marche_harmonique'], value: 8}]},
-        { degs: [3, 5, 0], function: 'sous-dominante', chiffre: 'IV', name: '_N_', weight: 8, weight_if: [ {cond: ['last_measures'], value: 10 }]},
-        { degs: [3, 5, 0, 2], function: 'sous-dominante', chiffre: 'IV7M', name: '_N_7M', weight: 8},
-        { degs: [4, 6, 1], function: 'dominante', chiffre: 'V', name: '_N_', weight: 10},
-        { degs: [4, 0, 1], function: 'dominante-sus4', chiffre: 'V+4', name: '_N_+4', weight: 9.5},
-        { degs: [4, 6, 1, 3], function: 'dominante', chiffre: 'V7', name: '_N_7', weight: 12},
-        { degs: [4, 0, 1, 3], function: 'dominante-sus4', chiffre: 'V7+4', name: '_N_7+4', weight: 12},
-        { degs: [5, 0, 2], function: 'sus-dominante', chiffre: 'VI', name: '_N_m', weight: 7},
-        { degs: [5, 0, 2, 4], function: 'sus-dominante', chiffre: 'VI', name: '_N_m7', weight: 8},
-        { degs: [6, 1, 3], function: 'sous-tonique', chiffre: 'VII', name: '_N_5-', weight: 12},
-        { degs: [6, 1, 3, 5], function: 'sous-tonique', chiffre: 'VIIo/', name: '_N_o/', weight: 6},
+        { degs: [0, 2, 4], function: this.CHFCT.Tonique, chiffre: 'I', name: '_N_', weight: 12},
+        { degs: [0, 2, 4, 6], function: this.CHFCT.Tonique, chiffre: 'I7M', name: '_N_7M', weight: 5},
+        { degs: [1, 3, 5], function: this.CHFCT.SusTonique, chiffre: 'II', name: '_N_m', weight: 9},
+        { degs: [1, 3, 5, 0], function: this.CHFCT.SusTonique, chiffre: 'II7', name: '_N_m7', weight: 11},
+        { degs: [2, 4, 6], function: this.CHFCT.Mediante, chiffre: 'III', name: '_N_m', weight: 3},
+        { degs: [2, 4, 6, 1], function: this.CHFCT.Mediante, chiffre: 'III7', name: '_N_m7', weight: 3, weight_if: [{cond: ['marche_harmonique'], value: 8}]},
+        { degs: [3, 5, 0], function: this.CHFCT.SousDominante, chiffre: 'IV', name: '_N_', weight: 8, weight_if: [ {cond: ['last_measures'], value: 10 }]},
+        { degs: [3, 5, 0, 2], function: this.CHFCT.SousDominante, chiffre: 'IV7M', name: '_N_7M', weight: 8},
+        { degs: [4, 6, 1], function: this.CHFCT.SousDominante, chiffre: 'V', name: '_N_', weight: 10},
+        { degs: [4, 0, 1], function: this.CHFCT.DominanteSus4, chiffre: 'V+4', name: '_N_+4', weight: 9.5},
+        { degs: [4, 6, 1, 3], function: this.CHFCT.Dominante, chiffre: 'V7', name: '_N_7', weight: 12},
+        { degs: [4, 0, 1, 3], function: this.CHFCT.DominanteSus4, chiffre: 'V7+4', name: '_N_7+4', weight: 12},
+        { degs: [5, 0, 2], function: this.CHFCT.SusDominante, chiffre: 'VI', name: '_N_m', weight: 7},
+        { degs: [5, 0, 2, 4], function: this.CHFCT.SusDominante, chiffre: 'VI', name: '_N_m7', weight: 8},
+        { degs: [6, 1, 3], function: this.CHFCT.SousTonique, chiffre: 'VII', name: '_N_5-', weight: 12},
+        { degs: [6, 1, 3, 5], function: this.CHFCT.SousTonique, chiffre: 'VIIo/', name: '_N_o/', weight: 6},
         // Autres accords (hors gammes)
-        { degs: [1, [3, +1], 5], function: 'dom-de-dom', chiffre: 'V/V', name: '_N_', weight: 6},
-        { degs: [1, [3, +1], 5, 0], function: 'dom-de-dom', chiffre: 'V7/V', name: '_N_7', weight: 7},
-        { degs: [6, 1, 3, [5, -1]], function: '7e-dim-de-sensible', chiffre: 'VIIo', name: '_N_o', weight: 10},
-        { degs: [[3, +1], 5, 0, [2, -1]], function: '7e-de-sensible-de-dom', chiffre: 'VIIo/V', name: '_N_o', weight: 9},
-        { degs: [[1, -1], 3, [5, -1]], function: 'napolitaine', chiffre: 'N', name: '_N_', weight: 4},
-        { degs: [[5, -1], 0, [2, -1], [3, +1]], function: 'sixte-aug-allemande', chiffre: 'VI+', name: '_N_6+', weight: 6},
-        { degs: [[5, -1], 0, 1, [3, +1]], function: 'sixte-aug-francaise', chiffre: 'VI+', name: (notes) => '_N_M75-'.replace(/_N_/, notes[2]), weight: 6},
-        { degs: [[5, -1], 0, [3, +1]], function: 'sixte-aug-italienne', chiffre: 'VI+', name: '_N_6+', weight: 6},
+        { degs: [1, [3, +1], 5], function: this.CHFCT.DomDeDom, chiffre: 'V/V', name: '_N_', weight: 6},
+        { degs: [1, [3, +1], 5, 0], function: this.CHFCT.DomDeDom, chiffre: 'V7/V', name: '_N_7', weight: 7},
+        { degs: [6, 1, 3, [5, -1]], function: this.CHFCT.SeptDimDeSensible, chiffre: 'VIIo', name: '_N_o', weight: 10},
+        { degs: [[3, +1], 5, 0, [2, -1]], function: this.CHFCT.SeptDeSensibleDeDom, chiffre: 'VIIo/V', name: '_N_o', weight: 9},
+        { degs: [[1, -1], 3, [5, -1]], function: this.CHFCT.Napolitaine, chiffre: 'N', name: '_N_', weight: 4},
+        { degs: [[5, -1], 0, [2, -1], [3, +1]], function: this.CHFCT.SixteAugAllemande, chiffre: 'VI+', name: '_N_6+', weight: 6},
+        { degs: [[5, -1], 0, 1, [3, +1]], function: this.CHFCT.SixteAugFrancaise, chiffre: 'VI+', name: (notes) => '_N_M75-'.replace(/_N_/, notes[2]), weight: 6},
+        { degs: [[5, -1], 0, [3, +1]], function: this.CHFCT.SixteAugItalienne, chiffre: 'VI+', name: '_N_6+', weight: 6},
 
       ],
     'min': [
-        { degs: [0, 2, 4], function: 'tonique', chiffre: 'I', name: '_N_m', weight: 12},
-        { degs: [0, 2, 4, 6], function: 'tonique', chiffre: 'I7M', name: '_N_m7M', weight: 3},
-        { degs: [1, 3, 5], function: 'sus-tonique', chiffre: 'II', name: '_N_5-', weight: 6},
-        { degs: [1, 3, 5, 0], function: 'sus-tonique', chiffre: 'IIo/', name: '_N_o/', weight: 7},
-        { degs: [2, 4, 6], function: 'mediante', chiffre: 'III', name: '_N_5+', weight: 4},
-        { degs: [2, 4, 6, 1], function: 'mediante', chiffre: 'III7', name: '_N_75+', weight: 3, weight_if: [{cond: ['marche_harmonique'], value: 8}]},
-        { degs: [3, 5, 0], function: 'sous-dominante', chiffre: 'IV', name: '_N_m', weight: 8, weight_if: [ {cond: ['last_measures', 'first_measures'], value: 10 }]},
-        { degs: [3, 5, 0, 2], function: 'sous-dominante', chiffre: 'IV7', name: '_N_m7', weight: 8},
-        { degs: [4, 6, 1], function: 'dominante', chiffre: 'V', name: '_N_', weight: 10},
-        { degs: [4, 6, 1, 3], function: 'dominante', chiffre: 'V7', name: '_N_7', weight: 12},
-        { degs: [5, 0, 2], function: 'sus-dominante', chiffre: 'VI', name: '_N_', weight: 8},
-        { degs: [5, 0, 2, 4], function: 'sus-dominante', chiffre: 'VI7M', name: '_N_7M', weight: 8},
-        { degs: [6, 1, 3], function: 'sous-tonique', chiffre: 'VII', name: '_N_5-', weight: 12},
-        { degs: [6, 1, 3, 5], function: 'sous-tonique', chiffre: 'VIIo', name: '_N_o', weight: 11},
+        { degs: [0, 2, 4], function: this.CHFCT.Tonique, chiffre: 'I', name: '_N_m', weight: 12},
+        { degs: [0, 2, 4, 6], function: this.CHFCT.Tonique, chiffre: 'I7M', name: '_N_m7M', weight: 3},
+        { degs: [1, 3, 5], function: this.CHFCT.SusTonique, chiffre: 'II', name: '_N_5-', weight: 6},
+        { degs: [1, 3, 5, 0], function: this.CHFCT.SusTonique, chiffre: 'IIo/', name: '_N_o/', weight: 7},
+        { degs: [2, 4, 6], function: this.CHFCT.Mediante, chiffre: 'III', name: '_N_5+', weight: 4},
+        { degs: [2, 4, 6, 1], function: this.CHFCT.Mediante, chiffre: 'III7', name: '_N_75+', weight: 3, weight_if: [{cond: ['marche_harmonique'], value: 8}]},
+        { degs: [3, 5, 0], function: this.CHFCT.SousDominante, chiffre: 'IV', name: '_N_m', weight: 8, weight_if: [ {cond: ['last_measures', 'first_measures'], value: 10 }]},
+        { degs: [3, 5, 0, 2], function: this.CHFCT.SousDominante, chiffre: 'IV7', name: '_N_m7', weight: 8},
+        { degs: [4, 6, 1], function: this.CHFCT.Dominante, chiffre: 'V', name: '_N_', weight: 10},
+        { degs: [4, 6, 1, 3], function: this.CHFCT.Dominante, chiffre: 'V7', name: '_N_7', weight: 12},
+        { degs: [5, 0, 2], function: this.CHFCT.SusDominante, chiffre: 'VI', name: '_N_', weight: 7},
+        { degs: [5, 0, 2, 4], function: this.CHFCT.SusDominante, chiffre: 'VI7M', name: '_N_7M', weight: 8},
+        { degs: [6, 1, 3], function: this.CHFCT.SousTonique, chiffre: 'VII', name: '_N_5-', weight: 12},
+        { degs: [6, 1, 3, 5], function: this.CHFCT.SousTonique, chiffre: 'VIIo', name: '_N_o', weight: 11},
         // Autres accords (hors gammes)
         // { degs: [1, [3, +1], [5, 1]], function: 'dom-de-dom', chiffre: 'V/V', name: '_N_', weight: 6},
         // { degs: [1, [3, +1], 5, 0], function: 'dom-de-dom', chiffre: 'V7/V', name: '_N_7', weight: 7},
-        { degs: [[3, +1], [5,+1], 0, 2], function: '7e-de-sensible-de-dom', chiffre: 'VIIo/V', name: '_N_o', weight: 9},
-        { degs: [[1, -1], 3, 5], function: 'napolitaine', chiffre: 'N', name: '_N_', weight: 8},
-        { degs: [5, 0, 2, [3, +1]], function: 'sixte-aug-allemande', chiffre: 'VI+', name: '_N_6+', weight: 6},
-        { degs: [5, 0, 1, [3, +1]], function: 'sixte-aug-francaise', chiffre: 'VI+', name: (notes) => '_N_M75-'.replace(/_N_/, notes[2]), weight: 6},
-        { degs: [5, 0, [3, +1]], function: 'sixte-aug-italienne', chiffre: 'VI+', name: '_N_6+', weight: 6},
-
-
-
- 
+        { degs: [[3, +1], [5,+1], 0, 2], function: this.CHFCT.SeptDeSensibleDeDom, chiffre: 'VIIo/V', name: '_N_o', weight: 9},
+        { degs: [[1, -1], 3, 5], function: this.CHFCT.Napolitaine, chiffre: 'N', name: '_N_', weight: 8},
+        { degs: [5, 0, 2, [3, +1]], function: this.CHFCT.SixteAugAllemande, chiffre: 'VI+', name: '_N_6+', weight: 6},
+        { degs: [5, 0, 1, [3, +1]], function: this.CHFCT.SixteAugFrancaise, chiffre: 'VI+', name: (notes) => '_N_M75-'.replace(/_N_/, notes[2]), weight: 6},
+        { degs: [5, 0, [3, +1]], function: this.CHFCT.SixteAugItalienne, chiffre: 'VI+', name: '_N_6+', weight: 6},
     ]
 
   } 
@@ -318,6 +355,7 @@ export class Tune {
     
 
   // === FONCTIONS DE DEBUG ===
+
   getNotes(){ return this.notes; }
   getChords() { return this.chords; }
 }

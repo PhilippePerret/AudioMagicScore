@@ -12,7 +12,7 @@ import { Tune } from "../../classes/Tune";
 
 test("Un accord dans une mesure est facilement détecté", () => {
   const A = new Analyzor();
-  const context: ContextType = {tune: 'cm'}
+  const context: ContextType = {tune: 'cm', tuneInstance: undefined}
   const notes: NoteType[] = [ut, mib, fa, sol];
   const res = A.analyze(notes, context);
   expect(res).toBeDefined();
@@ -20,7 +20,7 @@ test("Un accord dans une mesure est facilement détecté", () => {
 
 test("La discrimination par occurences fonctionne", () => {
   // On a un contexte simple…
-  const contexte: ContextType = {tune: 'c'};
+  const contexte: ContextType = {tune: 'c', tuneInstance: undefined};
   // On a un ensemble de notes de même durée
   const notes = [ut, ut, ut, ut, mi, mi, mi, sol, sol, sol, si, si, si];
   // On a deux accords C et Em
@@ -50,7 +50,7 @@ test("La discrimination par occurences fonctionne", () => {
 })
 
 test("Discrimination pour durée", () => {
-  const contexte: ContextType = {tune: 'c'};
+  const contexte: ContextType = {tune: 'c', tuneInstance: undefined};
   const utshort = dupN(ut, {duree: 12});
   const silong = dupN(si, {duree: 128});
   const notes = [utshort, utshort, utshort, mi, mi, mi, sol, sol, sol, silong, silong, silong];
@@ -80,15 +80,17 @@ test.only("Discrimination par durée et occurence", () => {
   // qui pourra les départager
 });
 
-test("Discrimination par la fonction dans un context", () => {
+test.only("Discrimination par la fonction dans un context", () => {
   // Entre un accord de Do majeur et un accord de La mineur, 
   // dans un contexte de Em, c'est le Em qui l'emporte
-   // On a un contexte simple…
+
+  // On a un contexte simple…
   const contexte: ContextType = {
     tune: 'em',
-    periode: 'classique'
+    periode: 'classique',
+    tuneInstance: undefined
   };
-  // On a deux accords C et Em
+  // … On a deux accords C et Em
   const chords = [
     new Chord({id: 'accord-C', notes: [ut, mi, sol], context: contexte}),
     new Chord({id: 'accord-Am', notes: [la, ut, mi], context: contexte})
@@ -102,21 +104,8 @@ test("Discrimination par la fonction dans un context", () => {
   const CM = res[1];
   expect(Am.id).toBe('accord-Am');
   expect(CM.id).toBe('accord-C');
-  expect(Am.rankByFunction).toBe(Chord.FONCTIONS.SubDominante.rankValue);
+  expect(Am.functionInContext(contexte)).toBe(Chord.FUNCTIONS.SousDominante);
+  expect(CM.functionInContext(contexte)).toBe(Chord.FUNCTIONS.SusDominante);
  
 })
 
-test.only("Pour essai", () => {
-  let tune = new Tune('c');
-  expect(tune.getNotes()).toEqual(['c','d','e','f','g','a','b']);
-  tune = new Tune('em');
-  expect(tune.getNotes()).toEqual(['e','fd','g','a','b','c','dd',]);
-  tune = new Tune('cb');
-  expect(tune.getNotes()).toEqual(['cb','db','eb','fb','gb','ab','bb']);
-  tune = new Tune('eb');
-  expect(tune.getNotes()).toEqual(['eb','f','g','ab','bb','c','d']);
-  tune = new Tune('gdm');
-  expect(tune.getNotes()).toEqual(['gd','ad','b','cd','dd','e','fdd']);
-  tune = new Tune('dm');
-  expect(tune.getNotes()).toEqual(['d','e','f','g','a','bb','cd']);
-})
