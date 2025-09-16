@@ -1,5 +1,19 @@
 # TODO
 
+## En ce moment
+
+  * Test en profondeur des discrimitations par poids de l'accord
+  * Découpage par tranches des mesures :
+    - On essaie de trouver un seul accord (avec quelques notes étrangères)
+    - SI on trouve => OK, on a notre chiffrage (on analyse les notes étrangères)
+      SINON, on découpe en temps (en fonction de la métrique)
+      SI ça marche par temps, OK, on a notre chiffrage
+      SINON, on découpe par demi-temps/croche (dernier découpage qui doit faire l'affaire)
+      On consière qu'on ne peut pas aller plus bas, on interprète en fonction (avec des
+      notes de passages, de retard, etc.)
+
+## Plus tard
+
 * Production des fichiers Score-image pour produire les partitions
 * Production de l'analyse harmonique
 * Production des statistiques (à voir) 

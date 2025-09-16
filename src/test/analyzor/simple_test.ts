@@ -1,9 +1,9 @@
 import { test, expect } from "bun:test";
 import { Analyzor } from "../../classes/Analyzor";
 import { ContextType, NoteType } from "../../classes/Note";
-import { dupN, fa, la, mi, mib, si, sol, ut } from "../utils_tests";
+import { dupN, fa, fad, la, lad, mi, mib, re, red, si, sid, sol, ut, utd } from "../utils_tests";
 import { Chord } from "../../classes/Chord";
-import { Tune } from "../../classes/Tune";
+import { shuffleArray } from "../../utils/classes_extensions";
 
 /**
  * Module pour faire des tests simples, c'est-à-dire des tests de
@@ -72,7 +72,7 @@ test("Discrimination pour durée", () => {
   expect(res[0].rankByDuree).toBe(1);
 })
 
-test.only("Discrimination par durée et occurence", () => {
+test("Discrimination par durée et occurence", () => {
   // Par exemple, un accord peut avoir plus de notes dans 
   // la partie, mais d'une durée faible. Il va donc
   // l'emporter au niveau du nombre de notes, le perdre
@@ -80,7 +80,7 @@ test.only("Discrimination par durée et occurence", () => {
   // qui pourra les départager
 });
 
-test.only("Discrimination par la fonction dans un context", () => {
+test("Discrimination par la fonction dans un context", () => {
   // Entre un accord de Do majeur et un accord de La mineur, 
   // dans un contexte de Em, c'est le Em qui l'emporte
 
@@ -108,4 +108,33 @@ test.only("Discrimination par la fonction dans un context", () => {
   expect(CM.functionInContext(contexte)).toBe(Chord.FUNCTIONS.SusDominante);
  
 })
+
+test.only("Classement par la fonction de quatre accords", () => {
+  const contexte: ContextType = {
+    tune: 'fdm', // Fa dièse mineur
+    periode: 'classique',
+    tuneInstance: undefined // sera instancié plus tard
+  }
+  const chords = [
+    new Chord({id: 'accord-F#m', notes: [fad, la, utd], context: contexte}),
+    new Chord({id: 'accord-F#', notes: [fad, lad, utd], context: contexte}),
+    new Chord({id: 'accord-D', notes: [re, fad, la], context: contexte}),
+    new Chord({id: 'accord-B#7dim', notes: [sid, red, fad, la], context: contexte})
+  ]
+  
+  const A = new Analyzor();
+
+  for (var i = 0; i < 4; ++i) {
+    shuffleArray(chords);
+    console.log("Classement initial des accords", chords.map((c: Chord) => c.id).join(', '));
+    // --- Test ---
+    let res: Chord[] = A.discrimineByFunction(chords, contexte);
+    // --- Vérifications --
+    const [acc1, acc2, acc3, acc4] = res;
+    expect(acc1.id).toBe('accord-F#m');
+    expect(acc2.id).toBe('accord-B#7dim');
+    expect(acc3.id).toBe('accord-D');
+    expect(acc4.id).toBe('accord-F#');
+  }
+});
 

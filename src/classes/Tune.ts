@@ -276,7 +276,7 @@ export class Tune {
         { degs: [[3, +1], [5,+1], 0, 2], function: this.CHFCT.SeptDeSensibleDeDom, chiffre: 'VIIo/V', name: '_N_o', weight: 9},
         { degs: [[1, -1], 3, 5], function: this.CHFCT.Napolitaine, chiffre: 'N', name: '_N_', weight: 8},
         { degs: [5, 0, 2, [3, +1]], function: this.CHFCT.SixteAugAllemande, chiffre: 'VI+', name: '_N_6+', weight: 6},
-        { degs: [5, 0, 1, [3, +1]], function: this.CHFCT.SixteAugFrancaise, chiffre: 'VI+', name: (notes) => '_N_M75-'.replace(/_N_/, notes[2]), weight: 6},
+        { degs: [5, 0, 1, [3, +1]], function: this.CHFCT.SixteAugFrancaise, chiffre: 'VI+', name: (notes: string[]) => '_N_M75-'.replace(/_N_/, notes[2]), weight: 6},
         { degs: [5, 0, [3, +1]], function: this.CHFCT.SixteAugItalienne, chiffre: 'VI+', name: '_N_6+', weight: 6},
     ]
 

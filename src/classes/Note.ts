@@ -9,7 +9,7 @@ import { Tune } from "./Tune";
  * Pour une note quelconque de la pièce
  */
 export type SimpleNote = 'a'|'b'|'c'|'d'|'e'|'f'|'g';
-type RealNote = `${SimpleNote}${''|'es'|'is'|'eses'|'isis'}`;
+type RealNote = `${SimpleNote}${''|'b'|'d'|'bb'|'dd'}`;
 export type DureeType = number;
 type ChromaticNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 

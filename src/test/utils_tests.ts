@@ -36,7 +36,7 @@ export const ut: NoteType = {
     alteration: 0
   } 
 export const utd: NoteType = {
-  rnote: 'cis',
+  rnote: 'cd',
   note: 'c',
   alteration: 1,
   duree: noire,
@@ -55,8 +55,18 @@ export const re: NoteType = {
   absDegree: 2,
   chromaticNumber: 3
 }
+export const red: NoteType = {
+  rnote: 'dd',
+  note: 'd',
+  alteration: 1,
+  duree: noire,
+  octave: 4,
+  relDegree: 2, 
+  absDegree: 2,
+  chromaticNumber: 4
+}
 export const mib: NoteType = {
-  rnote: 'ees',
+  rnote: 'eb',
   note: 'e', 
   alteration: -1,
   duree: noire,
@@ -86,7 +96,7 @@ export const fa: NoteType = {
   alteration: 0
 }
 export const fad: NoteType = {
-  rnote: 'fis',
+  rnote: 'fd',
   note: 'f',
   duree: noire,
   octave: 4,
@@ -96,7 +106,7 @@ export const fad: NoteType = {
   alteration: 1
 }
 export const solb: NoteType = {
-  rnote: 'ges',
+  rnote: 'gb',
   note: 'g',
   duree: noire,
   octave: 4,
@@ -116,7 +126,7 @@ export const sol: NoteType = {
   alteration: 0
 }
 export const sold: NoteType = {
-  rnote: 'gis',
+  rnote: 'gd',
   note: 'g',
   duree: noire,
   octave: 4,
@@ -126,7 +136,7 @@ export const sold: NoteType = {
   alteration: 1
 }
 export const lab: NoteType = {
-  rnote: 'aes',
+  rnote: 'ab',
   note: 'a',
   duree: noire,
   octave: 4,
@@ -146,7 +156,7 @@ export const la: NoteType = {
   alteration: 0
 }
 export const lad: NoteType = {
-  rnote: 'ais',
+  rnote: 'ad',
   note: 'a',
   duree: noire,
   octave: 4,
@@ -156,7 +166,7 @@ export const lad: NoteType = {
   alteration: 1
 }
 export const sib: NoteType = {
-  rnote: 'bes',
+  rnote: 'bb',
   note: 'b',
   duree: noire,
   octave: 4,
@@ -175,10 +185,20 @@ export const si: NoteType = {
     chromaticNumber: 12,
     alteration: 0
 }
+export const sid: NoteType = {
+  rnote: 'bd',
+  note: 'b',
+  duree: DUREE.noire,
+  octave: 4,
+  relDegree: 7,
+  absDegree: 7,
+  chromaticNumber: 1,
+  alteration: 1
+}
 export const NOTES = {
-  c: ut, do: ut, ut: ut,
+  c: ut, do: ut, ut: ut, sid: sid,
   cd: utd, utd: utd, cis: utd,
-  d: re, re: re,
+  d: re, re: re, red: red,
   eb: mib, mib: mib, eis: mib,
   e: mi, mi: mi,
   fa: fa, f: fa,
