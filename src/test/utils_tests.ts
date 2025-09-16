@@ -188,12 +188,12 @@ export const si: NoteType = {
 export const sid: NoteType = {
   rnote: 'bd',
   note: 'b',
+  alteration: 1,
   duree: DUREE.noire,
   octave: 4,
   relDegree: 7,
   absDegree: 7,
   chromaticNumber: 1,
-  alteration: 1
 }
 export const NOTES = {
   c: ut, do: ut, ut: ut, sid: sid,

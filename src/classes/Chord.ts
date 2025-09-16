@@ -1,10 +1,7 @@
+import { ChordFunction } from "../utils/music_constants";
 import { demiTonsBetween, intervalBetween } from "../utils/notes";
 import { ContextType, Note, NoteType } from "./Note";
-
-export type ChordFunction = 'Tonique' | 'Sus-Tonique' | 'Mediante' | 'Sous-Dominante' 
-  | 'Dominante' | 'DominanteSus4' | 'Sus-Dominante' | 'Sous-Tonique' 
-  | 'Dom-de-Dom' | '7e-dim-de-sensible' | '7e-de-sensible-de-dom'
-  | 'Napolitaine' | 'Sixte-aug-italienne' | 'Sixte-aug-francaise' | 'Sixte-aug-allemande';
+import { Tune } from "./Tune";
 
 export class Chord {
 
@@ -19,28 +16,8 @@ export class Chord {
   //  - propriété :after (autre fonction)
   //  - propriété :if (contexte)
   //  - propriété :if_not (contexte)
-  public static FUNCTIONS = {
-    Tonique: 'Tonique' as ChordFunction,
-    SusTonique: 'Sus-Tonique' as ChordFunction,
-    Mediante: 'Mediante' as ChordFunction,
-    SousDominante: 'Sous-Dominante' as ChordFunction,
-    SubDominante: 'Sous-Dominante' as ChordFunction,
-    Dominante: 'Dominante' as ChordFunction,
-    DominanteSus4: 'DominanteSus4' as ChordFunction,
-    SusDominante: 'Sus-Dominante' as ChordFunction,
-    SousTonique: 'Sous-Tonique' as ChordFunction,
-    SubTonique: 'Sous-Tonique' as ChordFunction,
-    // Autres fonctions
-    DomDeDom: 'Dom-de-Dom' as ChordFunction,
-    SeptDimDeSensible: '7e-dim-de-sensible' as ChordFunction,
-    SeptDeSensibleDeDom: '7e-de-sensible-de-dom' as ChordFunction,
-    Napolitaine: 'Napolitaine' as ChordFunction,
-    SixteAugAllemande: 'Sixte-aug-allemande' as ChordFunction,
-    SixteAugItalienne: 'Sixte-aug-italienne' as ChordFunction,
-    SixteAugFrancaise: 'Sixte-aug-francaise' as ChordFunction
 
-  }
-  
+ 
   /**
    * @api
    * Fonction qui reçoit des notes au hasard et les ordonne pour former un
@@ -325,14 +302,34 @@ export class Chord {
   private notes: NoteType[];
   private context: ContextType;
   public id: string;
+  public get name() { return this._name || (this._name = this.getName()); } 
+  private _name: string; // Le nom de l'accord, par exemple Cm7
+  public get function() { return this._function || (this._function = this.getFunction()); }
+  private _function: string; // Fonction dans le (dernier) contexte donné
+  private _data: Map<string, any>; // Les données de Tune.CHORDS_DATA
   public rankByDuree: number; // relatif au context, le rang, parmi plusieurs accords, en fonction de la durée de ses notes
   public rankByOccurences: number; // relatif au context, le rang, parmi plusieurs accords, en fonction de l'occurrence de ses notes
   public rankByFunction: number; // relatif au context, le rang, parmi plusieurs accords, en fonction de sa fonction harmonique
   private _weight: number;
+  private _snotes: string;
+  public get weight(){return this._weight;}
+  // Pour le débug des notes
+  public get simpleNotes(){
+    return this._snotes || (this._snotes = this.notes.map((n: NoteType) => n.rnote).join(', '));
+  }
+  private getName(){
+    this._data || this.functionInContext(this.context);
+    return this._data.get('name');
+  }
+  private getFunction(){
+    this._data || this.functionInContext(this.context);
+    return this._data.get('function');
+  }
 
   constructor(params: ChordParamType) {
     this.notes = params.notes;
     this.context = params.context;
+    this.context.tuneInstance = new Tune(this.context.tune as string);
     this.id = params.id || crypto.randomUUID();
   }
 
@@ -340,7 +337,10 @@ export class Chord {
    * Retourne la fonction de l'accord dans le contexte donné
    */
   public functionInContext(context: ContextType): ChordFunction {
+    this.context = context;
     const dataChord = context.tuneInstance.getDataChord(this.notes.map(n => n.rnote));
+    // console.log("dataChord: ", dataChord);
+    this._data = dataChord; 
     return dataChord.get('function') as ChordFunction;
   }
 
@@ -390,7 +390,8 @@ export class Chord {
     // La première chose à faire est de déterminer ce qu'est 
     // l'accord pour la tonalité courante (context.tune).
     const tune = context.tuneInstance;
-    return tune.weightOfChord(this.notes);
+    this._weight = tune.weightOfChord(this.notes);
+    return this.weight;
   }
 
 

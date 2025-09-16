@@ -1,7 +1,6 @@
-import { throwError } from "../utils/message";
-import { intervalBetween } from "../utils/notes";
+import { CHORD_FUNCTIONS } from "../utils/music_constants";
 import { Chord } from "./Chord";
-import { NoteType, SimpleNote, TuneType } from "./Note"
+import { SimpleNote, TuneType } from "./Note"
 
 type SimpleAlterStr = '' | 'b' | 'd';
 
@@ -20,10 +19,10 @@ export class Tune {
    * tonalité donnée (ce Tune)
    */
   public weightOfChord(notes: any[]): number {
-    console.log("Notes transmises", notes);
+    // console.log("Notes transmises", notes);
     const realNotes = notes.map(dnote => dnote.rnote);
     const dataChord = this.getDataChord(realNotes);
-    console.log("Data de l'accord %s : ", realNotes.join('-'), dataChord);
+    // console.log("Data de l'accord %s : ", realNotes.join('-'), dataChord);
     return dataChord.get('weight');
   }
 
@@ -194,7 +193,7 @@ export class Tune {
   constructor(
     private tune: string
   ){
-    console.log("Ton fourni = '%s'", this.tune);
+    // console.log("Ton fourni = '%s'", this.tune);
     let a: string | number | undefined, g: string | number | undefined;
     const exp = this.tune.split('');
     let n: string = exp.shift();
@@ -212,9 +211,9 @@ export class Tune {
     }
     g = exp.shift() || 'M';
 
-    console.log("g = ", g);
+    // console.log("g = ", g);
     this.nature = g === 'm' ? 'min' : 'maj';
-    console.log("nature gamme = %s", this.nature);
+    // console.log("nature gamme = %s", this.nature);
     this.note = n as SimpleNote;
     this.build();
   }
@@ -224,7 +223,7 @@ export class Tune {
     this.buildChords(); 
   }
 
-  private static readonly CHFCT = Chord.FUNCTIONS;
+  private static readonly CHFCT = CHORD_FUNCTIONS;
   private static CHORDS_DATA = {
     'maj':
       [
@@ -258,6 +257,8 @@ export class Tune {
     'min': [
         { degs: [0, 2, 4], function: this.CHFCT.Tonique, chiffre: 'I', name: '_N_m', weight: 12},
         { degs: [0, 2, 4, 6], function: this.CHFCT.Tonique, chiffre: 'I7M', name: '_N_m7M', weight: 3},
+        { degs: [0, [2,1], 4], function: this.CHFCT.ToniqueMaj, chiffre: 'IM', name: '_N_M', weight: 6},
+        { degs: [0, [2,1], 4, [6,-1]], function: this.CHFCT.Tonique7, chiffre: 'I7', name: '_N_7', weight: 7},
         { degs: [1, 3, 5], function: this.CHFCT.SusTonique, chiffre: 'II', name: '_N_5-', weight: 6},
         { degs: [1, 3, 5, 0], function: this.CHFCT.SusTonique, chiffre: 'IIo/', name: '_N_o/', weight: 7},
         { degs: [2, 4, 6], function: this.CHFCT.Mediante, chiffre: 'III', name: '_N_5+', weight: 4},
@@ -296,7 +297,7 @@ export class Tune {
       });
       const cmap = new Map(Object.entries(cdata));
       cmap.set('notes', cnotes);
-      console.log("cnotes", cnotes);
+      // console.log("cnotes", cnotes);
       let name: any;
       if ('string' === typeof cdata.name) {
         name = cnotes[0];
@@ -349,7 +350,7 @@ export class Tune {
       alte: this.alterStr, 
       nature: this.nature
     });
-   console.log("GAMMES de %s", this.tune, this.notes);
+  //  console.log("GAMME de %s", this.tune, this.notes);
 
   }
     
