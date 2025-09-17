@@ -74,7 +74,51 @@ export const DUREE = {
 // Note : ci-dessous, le 'implements NoteType' permet juste de
 // s'assurer que Note possèdera bien toutes les propriétés de
 // l'interface NoteType définie ci-dessus.
+
+
 export class Note implements NoteType {
+
+  // Pour obtenir la note par son degré 1-start
+  private static readonly DEGRES = ['b', 'c', 'd', 'e', 'f', 'g', 'a', 'b'];
+
+  /**
+   * Méthode qui reçoit la note +note+ et retourne la note située à +diff+
+   * demi-tons et à diffDegree degrés.
+   * 
+   * Cette méthode permet notamment de trouver les tonalités potentielles
+   * d'un accord quelconque. 
+   * 
+   * @param note La note en string (p.e. 'c' ou 'fdd')
+   * @param diff La différence de demitons (positif = plus haut, négatif = plus bas)
+   * @param diffDef La différence en degré. Par exemple, si la note est 'c' est diffDeg = 2 => 'e' avec un diff positif.
+   */
+  public static noteAt(rnote: string, diff: number, diffDeg: number): string {
+    const note: string = rnote.substring(0,1);
+    const noteSpecs = Tune.getNoteSpecs(note as SimpleNote);
+    const indexChroma = Tune.adjustIndexChromaByAlter(
+      noteSpecs.get('indexChroma'),
+      rnote.substring(1, rnote.length)
+    )
+    console.log("indexChroma note %s fournie : %i", rnote, indexChroma);
+    // On calcule l'index chromatique de la nouvelle note
+    let alphaChroma = (indexChroma + diff) % 12
+    console.log("Index chromatique de la nouvelle note : ", alphaChroma);
+    if (alphaChroma < 0 ) {
+      alphaChroma += 12
+      console.log("Index chromatique rectifié à ", alphaChroma);
+    }
+    const dataChroma = Tune.CHROM_DATA[alphaChroma]; // c'est là que se trouve la note voulue
+    console.log("Data chroma (alphaChroma = %i) : ", alphaChroma, dataChroma);
+    const noteDegre = noteSpecs.get('degre');
+    console.log("Note degré : %s", noteSpecs.get('degre'))
+    const alphaDeg = (noteDegre + diffDeg + 7) % 7;
+    console.log("Alpha degré (%i + %i) : %i", noteDegre, diffDeg, alphaDeg);
+    const alphaNote = this.DEGRES[alphaDeg];
+    console.log("Note cherchée (hors altération - this.DEGRES[%i]) : %s", alphaDeg, alphaNote);
+    return dataChroma[alphaNote];
+  }
+
+
   rnote: RealNote;
   note: SimpleNote;
   alteration: 0 | 1 | -1 | 2 | -2;

@@ -5,6 +5,7 @@ import { dupN, fa, fad, la, lab, lad, mi, mib, re, red, si, sid, sol, ut, utd } 
 import { Chord } from "../../classes/Chord";
 import { shuffleArray } from "../../utils/classes_extensions";
 import { CHORD_FUNCTIONS } from "../../utils/music_constants";
+import { isContext } from "vm";
 
 /**
  * Module pour faire des tests simples, c'est-à-dire des tests de
@@ -144,7 +145,7 @@ test("Classement par fonction de quatre accords (tonalité simple", () => {
 });
 
 
-test.only("Classement par la fonction de quatre accords (tonalité complexe)", () => {
+test("Classement par la fonction de quatre accords (tonalité complexe)", () => {
   let contexte: ContextType = {
     tune: 'fdm', // Fa dièse mineur
     periode: 'classique',
@@ -180,7 +181,7 @@ test.only("Classement par la fonction de quatre accords (tonalité complexe)", (
 
 
 // TENTATIVE POUR DÉCOUVRIR POURQUOI L'ACCORD si#7dim n'est pas reconnu
-test.only("Reconnaissance de l'accord si#7dim", () => {
+test("Reconnaissance de l'accord si#7dim", () => {
 
   function show(chord: Chord){
     console.log("Chord (%s) = %s", chord.simpleNotes, chord.name);
@@ -214,4 +215,37 @@ test.only("Reconnaissance de l'accord si#7dim", () => {
   chord = new Chord({notes: [sid, red, fad, lad], context: contexte});
   show(chord);
   expect(chord.name).toBe('Bdo/');
+
+  // Dans le même context majeur, un accord de 7e diminué doit être
+  // reconnu
+  chord = new Chord({notes: [sid, red, fad, la], context: contexte});
+  show(chord);
+  expect(chord.name).toBe('Bdo');
+
+  // Le même dans un contexte de Fa# mineur (doit être une Dom de
+  // Dom en tant que 7e dim de Dominante)
+  // Dominante de F#m = C#7
+  // Dominante (VII) de Dominante = VII de C#7 = Si# Re# Fa# La
+  contexte = { tune: 'fdm', tuneInstance: undefined }
+  chord = new Chord({notes: [sid, red, fad, la], context: contexte});
+  show(chord);
+  expect(chord.name).toBe('Bdo');
+  expect(chord.function).toBe(CHORD_FUNCTIONS.SeptDeSensibleDeDom);
+});
+
+
+test("On peut trouver les données d'un accord ignoré par la tonalité courante", () => {
+  let contexte: ContextType = {
+    tune: 'c', tuneInstance: undefined
+  }
+  let chord = new Chord({notes:[fa, lab, ut], context: contexte});
+  const A = new Analyzor();
+
+  let maybeTunes = A.nearestTunesFor(chord);
+  
+  expect(maybeTunes[0]).toBe('eb');  //  supposition Accord = II
+  expect(maybeTunes[1]).toBe('cm');  //  supposition Accord = IV (de Im)
+  expect(maybeTunes[2]).toBe('ab');  //  supposition Accord = Rel
+
+
 });

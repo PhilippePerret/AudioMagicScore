@@ -2,10 +2,9 @@
 
 ## En ce moment
 
-  * [BUG] Voir le test qui ne passe pas et le problème qu'il doit révéler
-    Est-ce que ça viendrait du fait que l'accord n'existe pas dans la tonalité
-    donnée et qu'il n'est pas reconnu comme accord extérieur mais analysable ?
-
+  * Si un accord n'est pas trouvé dans une tonalité donnée, on pourrait
+    chercher la tonalité la plus proche (ajout #/retrait b/relatif/) qui
+    peut le contenir.
   * Test en profondeur des discrimitations par poids de l'accord
   * Découpage par tranches des mesures :
     - On essaie de trouver un seul accord (avec quelques notes étrangères)

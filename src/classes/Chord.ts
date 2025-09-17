@@ -299,9 +299,10 @@ export class Chord {
    * 
    */
 
-  private notes: NoteType[];
+  public notes: NoteType[];
   private context: ContextType;
   public id: string;
+  public get data(){ return this._data; }
   public get name() { return this._name || (this._name = this.getName()); } 
   private _name: string; // Le nom de l'accord, par exemple Cm7
   public get function() { return this._function || (this._function = this.getFunction()); }

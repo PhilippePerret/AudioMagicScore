@@ -1,5 +1,5 @@
 import { Chord } from "./Chord";
-import { ContextType, NoteType } from "./Note";
+import { ContextType, Note, NoteType } from "./Note";
 import { Tune } from "./Tune";
 
 /**
@@ -148,5 +148,48 @@ export class Analyzor {
       chord.rankByFunction = index + 1;
       return chord;
     })
+  }
+
+    /**
+   * Trouve les tons les plus proche pour l'accord +chord+ en fonction de sa
+   * nature.
+   */
+  nearestTunesFor(chord: Chord): string[] {
+    const candiTunes: string[] = []
+    const first: string = chord.notes[0].rnote;
+    const genre = chord.data.get('genre');
+    switch(genre) {
+      case 'maj':
+        // V de tonalité Maj
+        // V de tonalité min
+        // IV de tonalité Maj
+        // VI de tonalité Min
+        // Nap de tonalité Min
+        break;
+      case 'min':
+        // II de tonalité Maj
+        candiTunes.push(Note.noteAt(first, -2));
+        // IV de tonalité Min
+        // I de tonalité Min
+        // Rel de tonalité Maj
+        break; 
+      case '5-':
+        // VII de tonalité Maj
+        // VII de tonalité min
+        // II de tonalité min
+        break;
+      case '6+':
+        // VI de tonalité Maj
+        // VI de tonalité min
+        break;
+      case '5+':
+        // V 5#
+        // IV 5#
+        // III de tonalité mineur
+        break;
+      default: 
+        throw new Error("Je ne connais le genre d'accord : " + genre);
+    }
+    return candiTunes;
   }
 }
