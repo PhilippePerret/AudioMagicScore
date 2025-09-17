@@ -161,31 +161,47 @@ export class Analyzor {
     switch(genre) {
       case 'maj':
         // V de tonalité Maj
+        candiTunes.push(Note.noteAt(first, 7, 4));
         // V de tonalité min
+        candiTunes.push(Note.noteAt(first, 5, 4) + 'min');
         // IV de tonalité Maj
+        candiTunes.push(Note.noteAt(first, 5, 3) + '');
         // VI de tonalité Min
+        candiTunes.push(Note.noteAt(first, 4, 2) + 'min');
         // Nap de tonalité Min
+        candiTunes.push(Note.noteAt(first, -1, -1) + 'm');
         break;
       case 'min':
         // II de tonalité Maj
-        candiTunes.push(Note.noteAt(first, -2));
+        candiTunes.push(Note.noteAt(first, -2, -1) + '');
         // IV de tonalité Min
+        candiTunes.push(Note.noteAt(first, -3, -5) + 'm');
         // I de tonalité Min
+        candiTunes.push(first + 'm')
         // Rel de tonalité Maj
+        candiTunes.push(Note.noteAt(first, 3, 2));
         break; 
       case '5-':
         // VII de tonalité Maj
+        candiTunes.push(Note.noteAt(first, 1, 1) + '');
         // VII de tonalité min
+        candiTunes.push(Note.noteAt(first, 1, 1) + 'min');
         // II de tonalité min
+        candiTunes.push(Note.noteAt(first, -2, -1) + 'min');
         break;
       case '6+':
         // VI de tonalité Maj
+        candiTunes.push(Note.noteAt(first, 4, 2) + '');
         // VI de tonalité min
+        candiTunes.push(Note.noteAt(first, 4, 2) + 'min');
         break;
       case '5+':
         // V 5#
+        candiTunes.push(Note.noteAt(first, 5, 3));
         // IV 5#
+        candiTunes.push(Note.noteAt(first, 7, 4 ));
         // III de tonalité mineur
+        candiTunes.push(Note.noteAt(first, -3, -2) + 'min');
         break;
       default: 
         throw new Error("Je ne connais le genre d'accord : " + genre);

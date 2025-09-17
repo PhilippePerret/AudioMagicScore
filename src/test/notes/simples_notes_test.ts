@@ -61,6 +61,11 @@ test("On peut obtenir la note à un écartement d'une note", () => {
     [['b', 1, 0], 'bd'],
     [['b', 1, 1], 'c'],
 
+    // Les degrés négatifs
+    [['d', -2, -1], 'c'],
+    [['c', -2, -1], 'bb'],
+    [['c', -3, -2], 'a'],
+
     // Plus complexes
     [['bd', 1, 0], 'bdd'],
     [['bd', -1, 0], 'b'],
