@@ -60,6 +60,10 @@ export class Tune {
   private static SCALES = new Map();        // idem
   private static NOTES_SPECS: Map<string, any> = new Map(); // idem
 
+  public static reset(){
+    this.NOTES_SPECS = new Map();
+  }
+
   // @return les spécificités de la note simple (i.e. sans altération) +note+
   public static getNoteSpecs(note: SimpleNote){
     if ( false === this.NOTES_SPECS.has(note)) {
@@ -120,13 +124,13 @@ export class Tune {
     { 'a': 'add', 'b': 'b', 'c': 'cb' },  // 11 | b
   ]
 
-  // @return la gamme de ton +tune+
-  // Par exemple {note: 'd', alte: '', nature: 'min'}
-  // En la construisant au besoin
-  private static getScale(tune: TuneType) {
-    if (false === this.SCALES.has(tune)) { this.SCALES.set(tune, this.buildScale(tune)); }
-    return this.SCALES.get(tune);
-  }
+  // // @return la gamme de ton +tune+
+  // // Par exemple {note: 'd', alte: '', nature: 'min'}
+  // // En la construisant au besoin
+  // private static getScale(tune: TuneType) {
+  //   if (false === this.SCALES.has(tune)) { this.SCALES.set(tune, this.buildScale(tune)); }
+  //   return this.SCALES.get(tune);
+  // }
 
   /**
    * Construit une gamme quelconque à partir de la note et du genre

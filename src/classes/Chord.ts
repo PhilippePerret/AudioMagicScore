@@ -1,6 +1,6 @@
 import { ChordFunction } from "../utils/music_constants";
 import { demiTonsBetween, intervalBetween } from "../utils/notes";
-import { ContextType, Note, NoteType } from "./Note";
+import { ContextType, Note, NoteType, SimpleNote } from "./Note";
 import { Tune } from "./Tune";
 
 export class Chord {
@@ -17,6 +17,83 @@ export class Chord {
   //  - propriété :if (contexte)
   //  - propriété :if_not (contexte)
 
+
+  /**
+   * @api
+   * 
+   * Fonction qui reçoit les notes d'un accord (au moins 3) et en
+   * déduit la nature et le genre de l'accord (mineur, majeur, 
+   * quinte diminuée, quinte augmentée, sixte augmentée, etc.)
+   */
+  static genreOf(chord: Chord): 'min' | 'maj' | '5-' | '5+' | '6+' {
+    let altFond: string, fond: any = chord.notes[0].rnote.split('');
+    [fond, altFond] = [fond.shift(), fond.join('')];
+    let altTierce: string, tierce: any = chord.notes[1].rnote.split('');
+    [tierce, altTierce] = [tierce.shift(), tierce.join('')];
+    let altQuinte: string, quinte: any = chord.notes[2].rnote.split('');
+    [quinte, altQuinte] = [quinte.shift(), quinte.join('')];
+    const hasQuatreNotes = chord.notes.length > 4;
+    let altSept: string, sept: any; 
+    if (hasQuatreNotes) {
+      sept = chord.notes[3].rnote.split('');
+      [sept, altSept] = [sept.shift(), sept.join('')];
+    }
+
+    // console.log("Sept", sept);
+
+    fond = Tune.getNoteSpecs(fond as SimpleNote);
+    fond.set('indexChroma', Tune.adjustIndexChromaByAlter(fond.get('indexChroma'), altFond));
+    console.log("tierce = '%s'", tierce);
+    tierce = Tune.getNoteSpecs(tierce as SimpleNote);
+    console.log("3ce specs", structuredClone(tierce));
+    console.log("alteration 3ce = %i", altTierce);
+    tierce.set('indexChroma', Tune.adjustIndexChromaByAlter(tierce.get('indexChroma'), altTierce));
+    quinte = Tune.getNoteSpecs(quinte as SimpleNote);
+    quinte.set('indexChroma', Tune.adjustIndexChromaByAlter(quinte.get('indexChroma'), altQuinte));
+    if (hasQuatreNotes) {
+      sept = Tune.getNoteSpecs(sept as SimpleNote);
+      sept.set('indexChroma', Tune.adjustIndexChromaByAlter(sept.get('indexChroma'), altSept));
+    }
+
+    // Maj ou Min
+    let diff31 = tierce.get('indexChroma') - fond.get('indexChroma');
+    console.log("ichroma fond: %i, ichroma 3ce: %i", fond.get('indexChroma'), tierce.get('indexChroma'));
+    if (diff31 < 0) { diff31 += 12; }
+    const genre = diff31 === 3 ? 'min' : 'maj';
+    console.log("genre : %s (diff = %i)", genre, diff31);
+    
+    // 5 juste, 5- ou 5+ ?
+    let diff51 = quinte.get('indexChroma') - fond.get('indexChroma');
+    if (diff51 < 0) { diff51 += 12; }
+    console.log("Diff entre 5te et Fond", diff51);
+    const natQuinte = ((diff) => {
+      switch(diff){
+        case 6: return '5-';
+        case 7: return '5';
+        case 8: return '5+';
+        case 10: return '6+';
+        default: throw new Error("Impossible d'estimer la différence " + String(diff));
+      }
+    })(diff51);
+
+    if (hasQuatreNotes) {
+      // 6# ?
+      let diff71 = sept.get('indexChroma') - fond.get('indexChroma');
+      if (diff71 < 0) { diff71 += 12; }
+      let diffDeg71 = sept.get('degre') - fond.get('degre');
+      if (diffDeg71 < 0) { diffDeg71 += 7; }
+      if (diff71 === 10 && diffDeg71 === 5) { return '6+'; }
+    }
+
+    let nature: any;
+    if (natQuinte === '5') { return genre; }
+    else if (natQuinte === '5-' && genre === 'min') { return natQuinte;}
+    else if (natQuinte === '5+' && genre === 'maj') { return natQuinte;}
+    else if (natQuinte === '6+') { return natQuinte; }
+    else {
+      throw new Error("Impossible de trouver la nature de l'accord " + chord.getName());
+    }
+  }
  
   /**
    * @api

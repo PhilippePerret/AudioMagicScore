@@ -157,6 +157,8 @@ export class Analyzor {
   nearestTunesFor(chord: Chord): string[] {
     const candiTunes: string[] = []
     const first: string = chord.notes[0].rnote;
+    console.log("chord.notes", chord.notes);
+    console.log("chord.data", chord.data);
     const genre = chord.data.get('genre');
     switch(genre) {
       case 'maj':

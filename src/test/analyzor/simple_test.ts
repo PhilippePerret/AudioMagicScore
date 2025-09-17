@@ -180,7 +180,6 @@ test("Classement par la fonction de quatre accords (tonalité complexe)", () => 
 });
 
 
-// TENTATIVE POUR DÉCOUVRIR POURQUOI L'ACCORD si#7dim n'est pas reconnu
 test("Reconnaissance de l'accord si#7dim", () => {
 
   function show(chord: Chord){
@@ -234,7 +233,7 @@ test("Reconnaissance de l'accord si#7dim", () => {
 });
 
 
-test("On peut trouver les données d'un accord ignoré par la tonalité courante", () => {
+test.only("On peut trouver les données d'un accord ignoré par la tonalité courante", () => {
   let contexte: ContextType = {
     tune: 'c', tuneInstance: undefined
   }
